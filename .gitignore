@@ -1,0 +1,59 @@
+# ======================
+# Node
+# ======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ======================
+# Environment variables
+# ======================
+.env
+.env.*
+!.env.example
+
+# ======================
+# Build output
+# ======================
+dist/
+build/
+out/
+coverage/
+
+# ======================
+# TypeScript
+# ======================
+*.tsbuildinfo
+
+# ======================
+# Logs
+# ======================
+logs/
+*.log
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# IDE
+# ======================
+.vscode/
+.idea/
+
+# ======================
+# Terraform / Infra
+# ======================
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# ======================
+# Temporary
+# ======================
+tmp/
+temp/

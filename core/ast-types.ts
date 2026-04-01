@@ -6,6 +6,7 @@ Properties (How is it configured?)
 A Parent (Is it inside a VPC?)
 and we would create json according to this structure 
 */
+// core/ast-types.ts
 export type AWSResourceType='EC2'|'S3'|'Lambda'|'DynamoDB'|'RDS'|'VPC'|'Subnet'|'SecurityGroup'|'IAMRole'|'CloudFormationStack';
 
 export interface BaseResources{

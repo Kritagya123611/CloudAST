@@ -95,9 +95,7 @@ case 'Lambda':
         }
     }
     `;
-
     default:
-      // Cast to 'any' because TS thinks this block is unreachable (res is 'never')
       return `\n# Resource type ${(res as any).type} not yet implemented in generator\n`;
 }
 }

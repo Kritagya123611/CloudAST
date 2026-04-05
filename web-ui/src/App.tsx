@@ -3,7 +3,8 @@ import Editor from '@monaco-editor/react'
 // Import our engine functions!
 import { parseJSXToState } from '../../parsers/jsx-parser/babel-visitor'
 import { generateTerraform } from '../../generators/hcl-generator/formatter'
-//import { parseHCLToState } from '../../parsers/hcl-parser/custom-parser'
+import { parseHCLToState } from '../../parsers/hcl-parser/custom-parser'
+import { generateJSX } from '../../generators/jsx-generator/react-builder'
 
 const DEFAULT_JSX = `<Infrastructure>
   <VPC className="cidr-10.0.0.0/16" name="prod-vpc">
@@ -29,10 +30,25 @@ export default function App() {
   }
 
   // The Reverse Gear: When HCL changes -> Update JSX (Optional Flex)
+// The Reverse Gear: When HCL changes -> Update JSX
   const handleHclChange = (value: string | undefined) => {
-    if (!value) return
-    setHclCode(value)
-    // In a future step, we can wire up the reverse parser here!
+    if (!value) return;
+    setHclCode(value);
+    
+    try {
+      // 1. Read the raw Terraform and build the JSON Blueprint
+      const reverseBlueprint = parseHCLToState(value);
+      
+      // 2. Generate new React JSX from that Blueprint
+      const newJsx = generateJSX(reverseBlueprint);
+      
+      // 3. Prevent infinite loops by only updating if the code actually changed
+      if (newJsx.trim() !== jsxCode.trim()) {
+        setJsxCode(newJsx);
+      }
+    } catch (err) {
+      console.log("Waiting for valid HCL syntax...");
+    }
   }
 
   // Run once on load to generate the initial HCL
@@ -73,7 +89,7 @@ export default function App() {
             theme="vs-dark"
             value={hclCode}
             onChange={handleHclChange}
-            options={{ minimap: { enabled: false }, fontSize: 14, readOnly: true }}
+            options={{ minimap: { enabled: false }, fontSize: 14, readOnly: false }}
           />
         </div>
 

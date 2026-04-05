@@ -70,18 +70,46 @@ case 'EC2':
 
 case 'S3':
     return `
-    resource "aws_s3_bucket" "${res.id}" {
-        bucket = "${res.bucketName || res.id}"
-        versioning {
-            enabled = ${res.versioningEnabled || false}
-        }
-        acl = "${res.accessControl || 'private'}"
-        tags = {
-            Name = "${res.id}"
-        }
-    }
-    `;
+resource "aws_s3_bucket" "${res.id}" {
+  bucket = "${res.bucketName || res.id}"
+  tags = {
+    Name = "${res.id}"
+    Environment = "Production"
+  }
+}
 
+# 🔒 AUTOMATED SECURITY: Enforce AES256 Encryption
+resource "aws_s3_bucket_server_side_encryption_configuration" "${res.id}_encryption" {
+  bucket = aws_s3_bucket.${res.id}.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# 🔒 AUTOMATED SECURITY: Block Public Access
+resource "aws_s3_bucket_public_access_block" "${res.id}_access" {
+  bucket                  = aws_s3_bucket.${res.id}.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# 🛡️ AUTOMATED IAM: Principle of Least Privilege
+resource "aws_iam_role" "${res.id}_access_role" {
+  name = "${res.id}-read-only-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+    }]
+  })
+}
+`;
 case 'Lambda':
     return `
     resource "aws_lambda_function" "${res.id}" {

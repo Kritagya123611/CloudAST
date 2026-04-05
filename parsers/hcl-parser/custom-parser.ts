@@ -1,5 +1,5 @@
 // src/parsers/hcl-parser/custom-parser.ts
-import { InfrastructureState, AWSResource, AWSResourceType } from '../../core/ast-types';
+import { InfrastructureState, AWSResource, AWSResourceType } from '../../core/schema/ast-types';
 
 // A mapping to translate Terraform resource types back to our JSX component names
 const resourceTypeMap: Record<string, AWSResourceType> = {

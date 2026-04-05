@@ -1,5 +1,5 @@
 // generators/jsx-generator/react-builder.ts
-import { InfrastructureState, AWSResource } from '../../core/ast-types';
+import { InfrastructureState, AWSResource } from '../../core/schema/ast-types';
 
 export function generateJSX(state: InfrastructureState): string {
   let jsx = `<Infrastructure>\n`;

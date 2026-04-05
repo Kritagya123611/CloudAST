@@ -7,7 +7,7 @@
 //4. Finally, we concatenate all the generated HCL code into a single string that represents the entire infrastructure as code configuration.
 // generators/hcl-generator/formatter.ts
 
-import { InfrastructureState, AWSResource } from '../../core/ast-types';
+import { InfrastructureState, AWSResource } from '../../core/schema/ast-types';
 
 export function generateTerraform(state: InfrastructureState): string {
   let hcl = `

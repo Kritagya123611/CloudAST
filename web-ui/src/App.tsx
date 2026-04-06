@@ -5,6 +5,8 @@ import { parseJSXToState } from '../../parsers/jsx-parser/babel-visitor'
 import { generateTerraform } from '../../generators/hcl-generator/formatter'
 import { parseHCLToState } from '../../parsers/hcl-parser/custom-parser'
 import { generateJSX } from '../../generators/jsx-generator/react-builder'
+import { InfrastructureState } from '../../core/schema/ast-types'
+import GraphCanvas from './components/GraphCanvas'
 
 const DEFAULT_JSX = `<Infrastructure>
   <VPC className="cidr-10.0.0.0/16" name="prod-vpc">
@@ -15,60 +17,49 @@ const DEFAULT_JSX = `<Infrastructure>
 export default function App() {
   const [jsxCode, setJsxCode] = useState(DEFAULT_JSX)
   const [hclCode, setHclCode] = useState('')
+  // ✨ NEW: We hold the JSON Blueprint in state so the Canvas can see it!
+  const [currentBlueprint, setCurrentBlueprint] = useState<InfrastructureState>({ resources: {} })
 
-  // The Forward Gear: When JSX changes -> Update HCL
   const handleJsxChange = (value: string | undefined) => {
     if (!value) return
     setJsxCode(value)
     try {
       const blueprint = parseJSXToState(value)
-      const newHcl = generateTerraform(blueprint)
-      setHclCode(newHcl)
+      setCurrentBlueprint(blueprint) // Update the Graph
+      setHclCode(generateTerraform(blueprint)) // Update Terraform
     } catch (err) {
-      console.log("Waiting for valid JSX syntax...")
+      // Waiting for valid JSX syntax...
     }
   }
 
-  // The Reverse Gear: When HCL changes -> Update JSX (Optional Flex)
-// The Reverse Gear: When HCL changes -> Update JSX
   const handleHclChange = (value: string | undefined) => {
-    if (!value) return;
-    setHclCode(value);
-    
+    if (!value) return
+    setHclCode(value)
     try {
-      // 1. Read the raw Terraform and build the JSON Blueprint
-      const reverseBlueprint = parseHCLToState(value);
-      
-      // 2. Generate new React JSX from that Blueprint
-      const newJsx = generateJSX(reverseBlueprint);
-      
-      // 3. Prevent infinite loops by only updating if the code actually changed
-      if (newJsx.trim() !== jsxCode.trim()) {
-        setJsxCode(newJsx);
-      }
+      const blueprint = parseHCLToState(value)
+      setCurrentBlueprint(blueprint) // Update the Graph
+      const newJsx = generateJSX(blueprint)
+      if (newJsx.trim() !== jsxCode.trim()) setJsxCode(newJsx)
     } catch (err) {
-      console.log("Waiting for valid HCL syntax...");
+      // Waiting for valid HCL syntax...
     }
   }
 
-  // Run once on load to generate the initial HCL
-  useEffect(() => {
-    handleJsxChange(DEFAULT_JSX)
-  }, [])
+  useEffect(() => { handleJsxChange(DEFAULT_JSX) }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#1e1e1e', color: 'white', fontFamily: 'sans-serif' }}>
       
       {/* Header */}
       <div style={{ padding: '1rem', borderBottom: '1px solid #333' }}>
-        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>⚛️ React2AWS Infrastructure Studio</h1>
+        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>⚛️ React2AWS Platform IDE</h1>
       </div>
 
-      {/* Split Screen */}
+      {/* 3-PANE SPLIT SCREEN */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         
-        {/* Left Side: React Code */}
-        <div style={{ flex: 1, borderRight: '1px solid #333', display: 'flex', flexDirection: 'column' }}>
+        {/* PANE 1: React Code (25%) */}
+        <div style={{ width: '25%', borderRight: '1px solid #333', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '0.5rem', backgroundColor: '#252526', fontSize: '0.9rem', color: '#858585' }}>infrastructure.jsx</div>
           <Editor
             height="100%"
@@ -76,12 +67,18 @@ export default function App() {
             theme="vs-dark"
             value={jsxCode}
             onChange={handleJsxChange}
-            options={{ minimap: { enabled: false }, fontSize: 14 }}
+            options={{ minimap: { enabled: false }, fontSize: 13 }}
           />
         </div>
 
-        {/* Right Side: Terraform Code */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* PANE 2: The Visual Canvas (50%) */}
+        <div style={{ width: '50%', borderRight: '1px solid #333', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+           <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, backgroundColor: '#00000088', padding: '5px 10px', borderRadius: '5px' }}>Live Architecture Graph</div>
+           <GraphCanvas blueprint={currentBlueprint} />
+        </div>
+
+        {/* PANE 3: Terraform Code (25%) */}
+        <div style={{ width: '25%', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '0.5rem', backgroundColor: '#252526', fontSize: '0.9rem', color: '#858585' }}>main.tf (Generated)</div>
           <Editor
             height="100%"
@@ -89,7 +86,7 @@ export default function App() {
             theme="vs-dark"
             value={hclCode}
             onChange={handleHclChange}
-            options={{ minimap: { enabled: false }, fontSize: 14, readOnly: false }}
+            options={{ minimap: { enabled: false }, fontSize: 13 }}
           />
         </div>
 

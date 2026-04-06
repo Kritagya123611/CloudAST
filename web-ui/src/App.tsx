@@ -7,6 +7,8 @@ import { parseHCLToState } from '../../parsers/hcl-parser/custom-parser'
 import { generateJSX } from '../../generators/jsx-generator/react-builder'
 import { InfrastructureState } from '../../core/schema/ast-types'
 import GraphCanvas from './components/GraphCanvas'
+import { generatePulumi } from './generators/polyglot-engine/pulumi-generator'
+import { generateCloudFormation } from './generators/polyglot-engine/cfn-generator'
 
 const DEFAULT_JSX = `<Infrastructure>
   <VPC className="cidr-10.0.0.0/16" name="prod-vpc">
@@ -19,8 +21,9 @@ export default function App() {
   const [hclCode, setHclCode] = useState('')
   const [currentBlueprint, setCurrentBlueprint] = useState<InfrastructureState>({ resources: {} })
   
-  // ✨ NEW: State to track which view the user wants
+  // State to track which view the user wants
   const [viewMode, setViewMode] = useState<'code' | 'visual'>('code')
+  const [targetLanguage, setTargetLanguage] = useState<'terraform' | 'pulumi' | 'cloudformation'>('terraform')
 
   const handleJsxChange = (value: string | undefined) => {
     if (!value) return
@@ -28,7 +31,11 @@ export default function App() {
     try {
       const blueprint = parseJSXToState(value)
       setCurrentBlueprint(blueprint)
-      setHclCode(generateTerraform(blueprint))
+      
+      // ✨ FIX: Check the dropdown before generating!
+      if (targetLanguage === 'terraform') setHclCode(generateTerraform(blueprint));
+      if (targetLanguage === 'pulumi') setHclCode(generatePulumi(blueprint));
+      if (targetLanguage === 'cloudformation') setHclCode(generateCloudFormation(blueprint));
     } catch (err) {}
   }
 
@@ -43,12 +50,20 @@ export default function App() {
     } catch (err) {}
   }
 
-  // ✨ NEW: When the user drops a node or connects an arrow, update the code!
   const handleGraphUpdate = (newBlueprint: InfrastructureState) => {
     setCurrentBlueprint(newBlueprint);
     setJsxCode(generateJSX(newBlueprint));
-    setHclCode(generateTerraform(newBlueprint));
+    
+    // Polyglot Engine Switcher
+    if (targetLanguage === 'terraform') setHclCode(generateTerraform(newBlueprint));
+    if (targetLanguage === 'pulumi') setHclCode(generatePulumi(newBlueprint));
+    if (targetLanguage === 'cloudformation') setHclCode(generateCloudFormation(newBlueprint));
   }
+
+  // If the user changes the dropdown, instantly re-translate the existing graph
+  useEffect(() => {
+    handleGraphUpdate(currentBlueprint);
+  }, [targetLanguage]);
 
   useEffect(() => { handleJsxChange(DEFAULT_JSX) }, [])
 
@@ -63,20 +78,20 @@ export default function App() {
       <div style={{ padding: '1rem', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ margin: 0, fontSize: '1.5rem' }}>⚛️ React2AWS Platform IDE</h1>
         
-        {/* ✨ NEW: View Switcher Buttons */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            style={viewMode === 'code' ? activeBtnStyle : inactiveBtnStyle} 
-            onClick={() => setViewMode('code')}
+        {/* ✨ FIX: Cleaned up Header Toggles & Dropdown */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <select 
+            value={targetLanguage} 
+            onChange={(e) => setTargetLanguage(e.target.value as any)}
+            style={{ padding: '8px', background: '#252526', color: 'white', border: '1px solid #4f46e5', borderRadius: '4px', cursor: 'pointer', outline: 'none' }}
           >
-            💻 Code Editor (50:50)
-          </button>
-          <button 
-            style={viewMode === 'visual' ? activeBtnStyle : inactiveBtnStyle} 
-            onClick={() => setViewMode('visual')}
-          >
-            📊 Visual Canvas
-          </button>
+            <option value="terraform">🎯 Target: Terraform (HCL)</option>
+            <option value="pulumi">🎯 Target: Pulumi (TS)</option>
+            <option value="cloudformation">🎯 Target: CloudFormation (JSON)</option>
+          </select>
+          
+          <button style={viewMode === 'code' ? activeBtnStyle : inactiveBtnStyle} onClick={() => setViewMode('code')}>💻 Code Editor (50:50)</button>
+          <button style={viewMode === 'visual' ? activeBtnStyle : inactiveBtnStyle} onClick={() => setViewMode('visual')}>📊 Visual Canvas</button>
         </div>
       </div>
 
@@ -109,16 +124,25 @@ export default function App() {
           </div>
         )}
 
-        {/* PANE 3: Terraform Code (Always shows on the right) */}
+        {/* PANE 3: The Polyglot Output */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '0.5rem', backgroundColor: '#252526', fontSize: '0.9rem', color: '#858585' }}>main.tf (Generated)</div>
+          <div style={{ padding: '0.5rem', backgroundColor: '#252526', fontSize: '0.9rem', color: '#858585', display: 'flex', justifyContent: 'space-between' }}>
+            <span>
+              {targetLanguage === 'terraform' && 'main.tf'}
+              {targetLanguage === 'pulumi' && 'index.ts'}
+              {targetLanguage === 'cloudformation' && 'template.json'}
+            </span>
+            <span style={{ color: '#4f46e5' }}>{targetLanguage === 'terraform' ? 'Bidirectional Sync Active' : 'Read-Only Mode'}</span>
+          </div>
           <Editor
             height="100%"
-            defaultLanguage="hcl"
+            // Change syntax highlighting dynamically!
+            language={targetLanguage === 'terraform' ? 'hcl' : targetLanguage === 'pulumi' ? 'typescript' : 'json'}
             theme="vs-dark"
             value={hclCode}
             onChange={handleHclChange}
-            options={{ minimap: { enabled: false }, fontSize: 14 }}
+            // Lock the editor if it's not Terraform
+            options={{ minimap: { enabled: false }, fontSize: 14, readOnly: targetLanguage !== 'terraform' }}
           />
         </div>
 

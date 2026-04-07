@@ -1,9 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '../supabaseClient';
 
-// Define what our Auth context looks like
 interface AuthContextType {
   user: any | null;
-  login: (email: string) => void;
   logout: () => void;
 }
 
@@ -11,34 +10,38 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true); // Critical for preventing the bounce
 
-  // Check if user is already logged in when the app loads
   useEffect(() => {
-    const storedUser = localStorage.getItem('react2aws_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // 1. Grab the session immediately on load (this reads that URL token!)
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) console.error("Session Error:", error);
+      setUser(session?.user ?? null);
+      setLoading(false); // Only stop loading once we know for sure
+    });
+
+    // 2. Listen for the auth state changing in the background
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth Event Fired:", _event); // This will help us debug if it fails!
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (email: string) => {
-    const newUser = { email };
-    setUser(newUser);
-    localStorage.setItem('react2aws_user', JSON.stringify(newUser)); // Save to browser
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('react2aws_user');
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
+    <AuthContext.Provider value={{ user, logout }}>
+      {/* 🚨 This is the magic lock. It prevents the router from bouncing you while the token is being read! */}
+      {!loading && children} 
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to make it easy to use
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within an AuthProvider");

@@ -1,26 +1,28 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  
+  const { login } = useAuth();
 
-  // Mock authentication - just sends you to the dashboard!
   const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd call Supabase, Firebase, or AWS Cognito here
+    login(email); 
     console.log(`Authenticating ${email}...`);
     navigate('/dashboard'); 
   };
 
   const handleSocialLogin = (provider: string) => {
-    console.log(`Redirecting to ${provider} OAuth...`);
+    login(`user@${provider.toLowerCase()}.com`);
     navigate('/dashboard');
   };
 
-  // --- STYLING ---
+  // --- STYLING WE NEED TO KEEP ---
   const inputStyle = {
     width: '100%',
     padding: '12px',
@@ -92,8 +94,8 @@ export default function Auth() {
           <input 
             type="email" 
             required 
-            placeholder="you@company.com" 
-            style={inputStyle} 
+            placeholder="you@company.com"  
+            style={inputStyle}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -123,7 +125,6 @@ export default function Auth() {
             {isLogin ? 'Sign up' : 'Log in'}
           </span>
         </p>
-
       </div>
     </div>
   );

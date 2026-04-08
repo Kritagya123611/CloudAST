@@ -12,6 +12,41 @@ import { InfrastructureState } from '../../../core/schema/ast-types'
 import GraphCanvas from './../components/GraphCanvas'
 import { generatePulumi } from './../generators/polyglot-engine/pulumi-generator'
 import { generateCloudFormation } from './../generators/polyglot-engine/cfn-generator'
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
+
+ // This function defines the exact colors from your screenshot
+const handleEditorWillMount = (monaco: any) => {
+  monaco.editor.defineTheme('cloudast-theme', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      // 1. Tags (<Infrastructure>, <VPC>) - Golden Orange
+      { token: 'tag', foreground: 'F59E0B', fontStyle: 'bold' },
+      { token: 'identifier', foreground: 'F59E0B' }, // Monaco sometimes maps JSX tags here
+      
+      // 2. Attributes (className, name) - Purple
+      { token: 'attribute.name', foreground: 'A78BFA' },
+      { token: 'type.identifier', foreground: 'A78BFA' },
+      
+      // 3. Strings ("cidr-10.0.0.0/16") - Bright Green
+      { token: 'string', foreground: '34D399' },
+      { token: 'attribute.value', foreground: '34D399' },
+      
+      // 4. Brackets and equals signs (<, >, =, /) - Muted Gray
+      { token: 'delimiter', foreground: '8A8A8A' },
+      { token: 'delimiter.html', foreground: '8A8A8A' },
+    ],
+    colors: {
+      'editor.background': '#050505', // Your app's deep black background
+      'editor.foreground': '#EFEFEF',
+      'editorLineNumber.foreground': '#555555',
+      'editorCursor.foreground': '#E8500A', // Orange cursor
+      'editor.lineHighlightBackground': '#111111',
+      'editor.selectionBackground': '#222222'
+    }
+  });
+};
 
 const DEFAULT_JSX = `<Infrastructure>
   <VPC className="cidr-10.0.0.0/16" name="prod-vpc">
@@ -97,6 +132,44 @@ export default function Studio() {
   
   const [viewMode, setViewMode] = useState<'code' | 'visual'>('code')
   const [targetLanguage, setTargetLanguage] = useState<'terraform' | 'pulumi' | 'cloudformation'>('cloudformation')
+
+  // --- NEW SAVE STATE ---
+  const { user } = useAuth();
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveName, setSaveName] = useState('Production Architecture');
+  const [saveRegion, setSaveRegion] = useState('us-east-1');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // --- NEW SAVE FUNCTION ---
+  const executeSave = async () => {
+    if (!user) {
+      alert("Error: You must be logged in to save.");
+      return;
+    }
+
+    setIsSaving(true);
+    const nodeCount = Object.keys(currentBlueprint.resources).length;
+
+    // Insert the blueprint into Supabase
+    const { error } = await supabase.from('blueprints').insert([{
+      user_id: user.id,
+      name: saveName,
+      region: saveRegion,
+      status: 'active',
+      nodes_count: nodeCount,
+      jsx_code: jsxCode // Saves the actual code!
+    }]);
+
+    setIsSaving(false);
+
+    if (error) {
+      console.error("Save error:", error);
+      alert("Failed to save. Check console for details.");
+    } else {
+      setShowSaveModal(false);
+      // Optional: Give visual feedback that it saved!
+    }
+  };
 
   // Inject Styles
   useEffect(() => {
@@ -186,7 +259,9 @@ export default function Studio() {
             </select>
             <ChevronDown size={14} className="select-icon" />
           </div>
-          <button className="btn-ide-primary"><Save size={14} /> Save</button>
+          <button className="btn-ide-primary" onClick={() => setShowSaveModal(true)}>
+            <Save size={14} /> Save
+          </button>
           <button className="btn-ide-primary" style={{ background: 'var(--orange)', color: '#fff' }}><Play size={14} /> Deploy</button>
         </div>
       </div>
@@ -218,7 +293,7 @@ export default function Studio() {
               <div className="panel-header">
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', textTransform: 'none' }}><FileCode2 size={14} color="#61DAFB"/> infrastructure.jsx</span>
               </div>
-              <Editor height="100%" defaultLanguage="javascript" theme="vs-dark" value={jsxCode} onChange={handleJsxChange} options={{ minimap: { enabled: false }, fontSize: 13, padding: { top: 16 } }} />
+              <Editor height="100%" defaultLanguage="javascript" theme="cloudast-theme" beforeMount={handleEditorWillMount} value={jsxCode} onChange={handleJsxChange} options={{ minimap: { enabled: false }, fontSize: 14, padding: { top: 16 } }} />
             </>
           ) : (
             <>
@@ -249,14 +324,67 @@ export default function Studio() {
           <Editor
             height="100%"
             language={targetLanguage === 'terraform' ? 'hcl' : targetLanguage === 'pulumi' ? 'typescript' : 'json'}
-            theme="vs-dark"
+            theme="cloudast-theme"
+            beforeMount={handleEditorWillMount}
             value={hclCode}
             onChange={handleHclChange}
-            options={{ minimap: { enabled: false }, fontSize: 13, padding: { top: 16 }, readOnly: targetLanguage !== 'terraform' }}
+            options={{ minimap: { enabled: false }, fontSize: 14, padding: { top: 16 }, readOnly: targetLanguage !== 'terraform' }}
           />
         </div>
 
       </div>
+      {/* ── THE SAVE MODAL ── */}
+      {showSaveModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
+          background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: 'var(--bg-panel)', border: '1px solid var(--border)',
+            borderRadius: '8px', padding: '24px', width: '400px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.8)'
+          }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: 500 }}>Save Blueprint</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px' }}>Project Name</label>
+                <input 
+                  type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-main)', borderRadius: '4px', outline: 'none' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px' }}>Target Region</label>
+                <select 
+                  value={saveRegion} onChange={(e) => setSaveRegion(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-main)', borderRadius: '4px', outline: 'none' }}
+                >
+                  <option value="us-east-1">us-east-1 (N. Virginia)</option>
+                  <option value="us-west-2">us-west-2 (Oregon)</option>
+                  <option value="eu-central-1">eu-central-1 (Frankfurt)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button 
+                onClick={() => setShowSaveModal(false)}
+                style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-main)', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={executeSave} disabled={isSaving}
+                style={{ padding: '8px 16px', background: 'var(--orange)', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                {isSaving ? 'Saving...' : 'Confirm Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

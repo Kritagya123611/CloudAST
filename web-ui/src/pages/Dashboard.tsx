@@ -120,32 +120,10 @@ export default function Dashboard() {
     };
 
     // ── DB INSERT: Create a New Blank Blueprint ──
-    const handleCreateNew = async () => {
-        if (!user) return;
-        setCreating(true);
-
-        const { data, error } = await supabase
-            .from('blueprints')
-            .insert([{ 
-                user_id: user.id, 
-                name: 'Untitled Architecture', 
-                region: 'us-east-1',
-                status: 'idle',
-                nodes_count: 0
-            }])
-            .select()
-            .single();
-
-        setCreating(false);
-        
-        if (error) {
-            console.error("Error creating blueprint:", error.message);
-            alert("Failed to create blueprint.");
-        } else if (data) {
-            // Navigate to the studio. 
-            // NOTE: In the future, you'll change this to navigate(`/studio/${data.id}`) to load the specific project!
-            navigate('/studio');
-        }
+const handleCreateNew = () => {
+        // Just send them to a blank canvas! 
+        // They will save it to the database later using the Studio's Save button.
+        navigate('/studio');
     };
 
     return (

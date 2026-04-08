@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState, ReactNode } from 'react';
-import { Terminal, GitBranch, ArrowRight, Database, Network, Code2, Cpu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Terminal, GitBranch, ArrowRight, Database, Network, Code2, Cpu, Zap, Box, HardDrive, Layers, FileCode2, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
 /* ─────────────────────────────────────────────────────────────
    STYLES
 ───────────────────────────────────────────────────────────── */
@@ -84,6 +85,13 @@ const STYLE = `
     transition: color .2s, border-color .2s;
   }
   .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,.18); }
+
+  /* ── FORCE SYMMETRICAL 2x2 GRID ── */
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
 
   .feat-card {
     background: var(--bg2);
@@ -171,9 +179,55 @@ const STYLE = `
     pointer-events: none;
   }
 
+  /* Code Window */
+  .code-window {
+    background: #0a0a0a; border: 1px solid var(--border); border-radius: 12px;
+    width: 100%; max-width: 800px; margin: 40px auto 0;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 30px 80px rgba(0,0,0,0.8), 0 0 60px var(--dim);
+    overflow: hidden; text-align: left;
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; background: #111; border-bottom: 1px solid var(--border);
+  }
+  .code-dots { display: flex; gap: 8px; }
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; background: #333; }
+  .code-title { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.75rem; color: var(--muted2); }
+
+  .syn-tag { color: #E8500A; }
+  .syn-attr { color: #A78BFA; }
+  .syn-val { color: #34D399; }
+  .syn-text { color: #EFEFEF; }
+
+  /* Step Pipeline */
+  .step-container { display: flex; justify-content: space-between; align-items: flex-start; position: relative; max-width: 900px; margin: 60px auto; }
+  .step-line { position: absolute; top: 32px; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--orange), transparent); opacity: 0.5; z-index: 0; }
+  .step-item { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 30%; text-align: center; }
+  .step-icon { 
+    width: 64px; height: 64px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; color: var(--orange); margin-bottom: 20px;
+    box-shadow: 0 0 0 6px var(--bg);
+  }
+  .step-num { position: absolute; top: -5px; right: 25px; background: var(--orange); color: #000; font-family: var(--mono); font-size: 0.65rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+
+  /* Resource Cards */
+  .resource-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 24px; position: relative; transition: all 0.2s;
+  }
+  .resource-card:hover { border-color: rgba(232,80,10,0.4); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .aws-badge { position: absolute; top: 20px; right: 20px; font-family: var(--mono); font-size: 0.6rem; color: var(--muted); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; }
+
+  @media (max-width:850px){
+    .feat-grid { grid-template-columns: 1fr; }
+  }
+
   @media (max-width:768px){
     .hide-sm { display:none !important; }
     .col-sm  { flex-direction:column !important; }
+    .step-container { flex-direction: column; gap: 40px; align-items: center; }
+    .step-line { display: none; }
+    .step-item { width: 100%; }
   }
 `;
 
@@ -203,7 +257,7 @@ const useTypewriter = (text: string, speed = 60, delay = 0) => {
 };
 
 /* ─────────────────────────────────────────────────────────────
-   ACTUAL ARCHITECTURE FEATURES
+   DATA ARRAYS
 ───────────────────────────────────────────────────────────── */
 const TICKS = [
   '<ReactFlowProvider />','Supabase_Auth.getSession()','buildAST(nodes, edges)',
@@ -236,6 +290,15 @@ const FEATURES = [
     title: 'Bidirectional IDE',
     body: "Embedded Monaco Editor (the engine behind VS Code) provides syntax-highlighted output. As you move nodes on the canvas, the code editor updates instantly without page refreshes.",
   },
+];
+
+const SUPPORTED_RESOURCES = [
+  { name: 'VPC', icon: <Network size={24} color="#60A5FA" />, desc: 'Virtual Private Cloud with subnets, NAT, and routing.' },
+  { name: 'RDS', icon: <Database size={24} color="#34D399" />, desc: 'PostgreSQL, MySQL, MariaDB with Multi-AZ support.' },
+  { name: 'Fargate', icon: <Box size={24} color="#FBBF24" />, desc: 'Serverless containers with ECS orchestration.' },
+  { name: 'Lambda', icon: <Zap size={24} color="#A78BFA" />, desc: 'Serverless functions with multiple runtimes.' },
+  { name: 'S3', icon: <HardDrive size={24} color="#38BDF8" />, desc: 'Object storage with versioning and encryption.' },
+  { name: 'DynamoDB', icon: <Layers size={24} color="#818CF8" />, desc: 'NoSQL database with on-demand scaling.' }
 ];
 
 /* ─────────────────────────────────────────────────────────────
@@ -289,19 +352,16 @@ export default function Landing() {
         </div>
 
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          {/* If there is NO user, show the Sign In button */}
           {!user && (
             <button className="nav-pill hide-sm" onClick={() => navigate('/login')}>Sign in</button>
           )}
-          
-          {/* Change button action based on auth state */}
           <button className="btn-fire" onClick={() => navigate(user ? '/dashboard' : '/login')}>
             {user ? 'Go to Dashboard' : 'Open Studio'} <ArrowRight size={14} />
           </button>
         </div>
       </nav>
 
-      {/* ── HERO ── */}
+      {/* ── HERO SECTION ── */}
       <section style={{
         position:'relative', minHeight:'100vh',
         display:'flex', flexDirection:'column',
@@ -328,11 +388,11 @@ export default function Landing() {
           </span>
         </div>
 
-        {/* Headline (Resized and Typewriter added) */}
+        {/* Headline */}
         <h1 className="fade-up" style={{
           animationDelay:'100ms',
           fontFamily:'var(--display)',
-          fontSize:'clamp(3rem, 8vw, 6.5rem)', // Scaled down from 13vw
+          fontSize:'clamp(3rem, 8vw, 6.5rem)',
           letterSpacing:'.04em', lineHeight:.95,
           color:'var(--text)', maxWidth:1000, marginBottom:32,
           position: 'relative', zIndex: 10
@@ -365,8 +425,8 @@ export default function Landing() {
           </button>
         </div>
 
-        {/* Real Terminal Output */}
-        <div className="fade-up term-wrap" style={{ animationDelay:'400ms', width:'100%', maxWidth:700, textAlign:'left', zIndex: 10 }}>
+        {/* Real Terminal Output (Enlarged) */}
+        <div className="fade-up term-wrap" style={{ animationDelay:'400ms', width:'100%', maxWidth: 850, minHeight: 280, textAlign:'left', zIndex: 10 }}>
           <div className="term-bar">
             <div className="term-dot" style={{ background:'#FF5F56' }} />
             <div className="term-dot" style={{ background:'#FEBC2E' }} />
@@ -375,7 +435,7 @@ export default function Landing() {
               src/compiler/ast.ts
             </span>
           </div>
-          <div style={{ padding:'24px', fontFamily:'var(--mono)', fontSize:'.8rem', lineHeight:1.9, color:'#777' }}>
+          <div style={{ padding:'24px', fontFamily:'var(--mono)', fontSize:'.85rem', lineHeight:1.9, color:'#777' }}>
             <div>
               <span style={{ color:'var(--orange2)' }}>~</span>
               <span style={{ color:'var(--muted2)' }}> $ </span>
@@ -384,7 +444,7 @@ export default function Landing() {
             </div>
             {isCmdDone && (
               <>
-                <div style={{ animation:'fadeIn .3s both', animationDelay:'.1s', color:'#3ECF8E', marginTop: 8 }}>
+                <div style={{ animation:'fadeIn .3s both', animationDelay:'.1s', color:'#3ECF8E', marginTop: 12 }}>
                   [info] Supabase session verified
                 </div>
                 <div style={{ animation:'fadeIn .3s both', animationDelay:'.3s', color:'#4ADE80' }}>
@@ -398,7 +458,7 @@ export default function Landing() {
                   <span style={{ color:'var(--orange2)' }}>▸</span>
                   {' '}Updating Monaco Editor state...
                 </div>
-                <div style={{ animation:'fadeIn .3s both', animationDelay:'1.2s', marginTop: 8 }}>
+                <div style={{ animation:'fadeIn .3s both', animationDelay:'1.2s', marginTop: 12 }}>
                   <span className="blink" style={{ display:'inline-block', width:8, height:16, background:'var(--orange)', verticalAlign:'middle' }} />
                 </div>
               </>
@@ -407,7 +467,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── TICKER (Actual Tech Stack) ── */}
+      {/* ── TICKER ── */}
       <div className="ticker-wrap">
         <div className="ticker-track">
           {[...TICKS, ...TICKS].map((t, i) => (
@@ -418,15 +478,10 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* ── FEATURES SECTION ── */}
-      <section style={{ padding:'80px 32px 100px', maxWidth:1100, margin:'0 auto', position: 'relative' }}>
-        
+      {/* ── THE ACTUAL ARCHITECTURE SECTION (Symmetrical Grid) ── */}
+      <section style={{ padding:'100px 32px', maxWidth:1100, margin:'0 auto', position: 'relative' }}>
         <div style={{ textAlign:'center', marginBottom: 60 }}>
-          <h2 style={{
-            fontFamily:'var(--display)',
-            fontSize:'clamp(2.5rem, 5vw, 4rem)',
-            letterSpacing:'.06em', color:'var(--text)', lineHeight:.95,
-          }}>
+          <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(2.5rem, 5vw, 4rem)', letterSpacing:'.06em', color:'var(--text)', lineHeight:.95 }}>
             THE ACTUAL <span style={{ color:'var(--orange)' }}>ARCHITECTURE.</span>
           </h2>
           <p style={{ fontFamily:'var(--sans)', color:'var(--muted2)', marginTop:16, maxWidth:500, margin:'16px auto 0' }}>
@@ -434,24 +489,144 @@ export default function Landing() {
           </p>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:20 }}>
+        {/* Changed to explicit 2x2 grid class */}
+        <div className="feat-grid">
           {FEATURES.map((f, i) => (
             <div key={i} className="feat-card">
               <div className="feat-icon">{f.icon}</div>
               <span className="tag">{f.tag}</span>
-              <h3 style={{
-                fontFamily:'var(--display)',
-                fontSize:'1.6rem', letterSpacing:'.05em',
-                lineHeight:1.1, marginTop:16, marginBottom:12,
-                color:'var(--text)',
-              }}>{f.title}</h3>
-              <p style={{ fontFamily:'var(--sans)', fontSize:'.85rem', color:'var(--muted2)', lineHeight:1.7 }}>{f.body}</p>
+              <h3 style={{ fontFamily:'var(--display)', fontSize:'1.6rem', letterSpacing:'.05em', lineHeight:1.1, marginTop:16, marginBottom:12, color:'var(--text)' }}>
+                {f.title}
+              </h3>
+              <p style={{ fontFamily:'var(--sans)', fontSize:'.85rem', color:'var(--muted2)', lineHeight:1.7 }}>
+                {f.body}
+              </p>
             </div>
           ))}
         </div>
-
       </section>
 
+      {/* ── HOW IT WORKS PIPELINE ── */}
+      <section style={{ padding: '80px 24px', background: 'var(--bg2)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>How It Works</h2>
+          <p style={{ color: 'var(--muted2)', fontSize: '1.1rem' }}>Three steps from JSX to deployed infrastructure</p>
+        </div>
+
+        <div className="step-container">
+          <div className="step-line" />
+          
+          <div className="step-item">
+            <div className="step-icon"><Code2 size={28} /> <div className="step-num">1</div></div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Write JSX</h3>
+            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>Define infrastructure using familiar React component syntax and nested hierarchies.</p>
+          </div>
+
+          <div className="step-item">
+            <div className="step-icon"><Layers size={28} /> <div className="step-num">2</div></div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Configure</h3>
+            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>Set resource properties using our intuitive Tailwind-inspired prefix-value classes.</p>
+          </div>
+
+          <div className="step-item">
+            <div className="step-icon"><Zap size={28} /> <div className="step-num">3</div></div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Generate</h3>
+            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>Get production-ready Terraform files with AWS best practices automatically baked in.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── INTUITIVE SYNTAX SECTION ── */}
+      <section style={{ padding: '100px 24px', textAlign: 'center', position: 'relative' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>Intuitive Syntax</h2>
+          <p style={{ color: 'var(--muted2)', fontSize: '1.1rem' }}>Configuration that feels natural to React developers</p>
+        </div>
+
+        <div className="code-window">
+          <div className="code-header">
+            <div className="code-dots">
+              <div className="code-dot" style={{background: '#EF4444'}}/>
+              <div className="code-dot" style={{background: '#F59E0B'}}/>
+              <div className="code-dot" style={{background: '#10B981'}}/>
+            </div>
+            <div className="code-title"><FileCode2 size={14} color="#F59E0B" /> infrastructure.jsx</div>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: '0.7rem', color: '#E8500A', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Zap size={12} /> Generating Terraform...
+            </div>
+          </div>
+          
+          <div style={{ padding: '32px', fontFamily: 'var(--mono)', fontSize: '0.9rem', lineHeight: 1.8, overflowX: 'auto' }}>
+            <div>
+              <span className="syn-text">1&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">Infrastructure</span><span className="syn-text">&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">2&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">VPC</span> <span className="syn-attr">className</span><span className="syn-text">=</span><span className="syn-val">"cidr-10.0.0.0/16 region-us-east-1"</span><span className="syn-text">&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">RDS</span> <span className="syn-attr">className</span><span className="syn-text">=</span><span className="syn-val">"engine-postgres multi-az"</span> <span className="syn-text">/&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">Fargate</span> <span className="syn-attr">className</span><span className="syn-text">=</span><span className="syn-val">"mem-2gb cpu-1 port-8080"</span> <span className="syn-text">/&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">Lambda</span> <span className="syn-attr">className</span><span className="syn-text">=</span><span className="syn-val">"runtime-nodejs22"</span> <span className="syn-text">/&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">6&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;/</span><span className="syn-tag">VPC</span><span className="syn-text">&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">7&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;/</span><span className="syn-tag">Infrastructure</span><span className="syn-text">&gt;</span><span className="blink">_</span>
+            </div>
+          </div>
+
+          <div style={{ padding: '16px 24px', background: '#111', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '16px', fontFamily: 'var(--mono)', fontSize: '0.75rem', color: 'var(--muted)' }}>
+            <span style={{ color: 'var(--text)' }}>&gt;_ Output:</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', padding: '4px 10px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.2)' }}><Check size={12}/> main.tf</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '4px' }}>variables.tf</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '4px' }}>outputs.tf</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SUPPORTED RESOURCES GRID ── */}
+      <section style={{ padding: '60px 24px 120px', maxWidth: '1100px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>Supported Resources</h2>
+          <p style={{ color: 'var(--muted2)', fontSize: '1.1rem' }}>All the building blocks for modern cloud architecture</p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+          {SUPPORTED_RESOURCES.map((res, i) => (
+            <div key={i} className="resource-card">
+              <div className="aws-badge">AWS</div>
+              <div style={{ marginBottom: '20px' }}>{res.icon}</div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '10px' }}>{res.name}</h3>
+              <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.5 }}>{res.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#050505', flexWrap: 'wrap', gap: '20px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ width:24, height:24, borderRadius:4, background:'var(--orange)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <GitBranch size={12} color="#fff" strokeWidth={2.5} />
+          </div>
+          <span style={{ fontFamily:'var(--display)', fontSize:'1.2rem', letterSpacing:'.08em', color:'var(--text)' }}>REACT2AWS</span>
+        </div>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: '0.75rem', color: 'var(--muted)' }}>
+          © 2026 CloudAST Engine. MIT License.
+        </div>
+      </footer>
     </>
   );
 }

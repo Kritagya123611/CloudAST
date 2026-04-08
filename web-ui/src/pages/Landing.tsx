@@ -308,7 +308,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const { user } = useAuth();
   // Typewriters
-  const typedHero = useTypewriter("DRAWN, NOT TYPED.", 70, 500);
+  const typedHero = useTypewriter("BUILT LIKE COMPONENTS", 70, 500);
   const typedCmd = useTypewriter('react2aws compile --target terraform', 40, 1500);
   const isCmdDone = typedCmd.length >= 'react2aws compile --target terraform'.length;
 
@@ -384,7 +384,7 @@ export default function Landing() {
             background:'rgba(232,80,10,.08)', color:'var(--orange2)',
           }}>
             <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--orange)', animation:'pulse 2s ease infinite' }} />
-            BETA BUILD · SUPABASE CONNECTED
+            BETA BUILD 
           </span>
         </div>
 
@@ -408,11 +408,11 @@ export default function Landing() {
         <p className="fade-up" style={{
           animationDelay:'200ms',
           fontFamily:'var(--sans)', fontWeight:400,
-          fontSize:'1.1rem', lineHeight:1.7,
+          fontSize:'1.2rem', lineHeight:1.7,
           color:'var(--muted2)', maxWidth:550, marginBottom:48,
           position: 'relative', zIndex: 10
         }}>
-          A developer tool combining the visual power of <span style={{ color: '#fff' }}>React Flow</span> with the persistence of <span style={{ color: '#3ECF8E' }}>Supabase</span>. Design AWS architecture visually and generate raw code instantly.
+          Architect enterprise <span style={{ color: '#3ECF8E' }}>AWS</span> environments using familiar <span style={{ color: '#ffffff' }}>React (JSX)</span>. or a bidirectional visual canvas. Instantly compile your topologies into production-ready <span style={{ color: '#ffffff' }}>Terraform, Pulumi, or CloudFormation.</span>
         </p>
 
         {/* CTAs */}
@@ -420,7 +420,7 @@ export default function Landing() {
           <button className="btn-fire" style={{ fontSize:'.95rem', padding:'14px 28px' }} onClick={() => navigate('/dashboard')}>
             Launch App <ArrowRight size={16} />
           </button>
-          <button className="btn-ghost" style={{ fontSize:'.95rem', padding:'14px 24px' }} onClick={() => window.open('https://github.com', '_blank')}>
+          <button className="btn-ghost" style={{ fontSize:'.95rem', padding:'14px 24px' }} onClick={() => window.open('https://github.com/Kritagya123611/CloudAST', '_blank')}>
             <Terminal size={16} /> View GitHub Repo
           </button>
         </div>

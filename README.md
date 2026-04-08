@@ -1,17 +1,25 @@
 <div align="center">
 
-# CLOUDAST
+<br />
 
+# CloudAST
 **Component-Driven Cloud Infrastructure Compiler**
 
-<p align="center">
+[![Status: Public Beta](https://img.shields.io/badge/Status-Public_Beta-E8500A?style=for-the-badge)](https://react2aws.xyz)
+[![Compiler: JSX to HCL](https://img.shields.io/badge/Compiler-JSX_to_HCL-111111?style=for-the-badge&logo=react)](https://react2aws.xyz)
+[![Powered by Supabase](https://img.shields.io/badge/Powered_by-Supabase-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-111111?style=for-the-badge)](LICENSE)
+
+<br />
+
+<p align="center" style="font-size: 1.1rem; line-height: 1.6;">
   Architect enterprise AWS environments using <b>React (JSX)</b> or a bidirectional <b>Visual Canvas</b>. <br />
-  Instantly compile your designs into production-ready <b>Terraform</b>, <b>Pulumi</b>, or <b>CloudFormation</b>.
+  Instantly compile topologies into production-ready <b>Terraform</b>, <b>Pulumi</b>, or <b>CloudFormation</b>.
 </p>
 
 <br />
 
-[**Open Studio IDE**](#local-development-setup) &nbsp;·&nbsp; [**Documentation**](#table-of-contents) &nbsp;·&nbsp; [**Report a Bug**](https://github.com/your-org/cloudast/issues)
+[**Launch Studio**](#local-development-setup) &nbsp;&nbsp;|&nbsp;&nbsp; [**Read the Docs**](#table-of-contents) &nbsp;&nbsp;|&nbsp;&nbsp; [**Report a Bug**](https://github.com/your-org/cloudast/issues)
 
 <br />
 </div>
@@ -61,7 +69,7 @@ No new proprietary DSL. No lock-in. The output is standard IaC your team already
 
 ## Core Features
 
-### 🧠 &nbsp;Polyglot Compiler Engine
+###  &nbsp;Polyglot Compiler Engine
 
 One internal AST. Three deployment targets. The compiler translates your JSX graph into whichever format your organization uses — with bidirectional sync for Terraform and read-only output for Pulumi and CloudFormation.
 
@@ -71,14 +79,14 @@ One internal AST. Three deployment targets. The compiler translates your JSX gra
 | **Pulumi (TypeScript)** | Read-only | Strongly-typed `@pulumi/aws` instantiations |
 | **AWS CloudFormation** | Read-only | Native JSON with `Refs`, `DependsOn`, and IAM roles |
 
-### 🎨 &nbsp;Bidirectional Visual Canvas
+###  &nbsp;Bidirectional Visual Canvas
 
 Built on React Flow. The canvas and the code editor are two views into the same AST — they stay in perfect sync.
 
 - **Visual → Code:** Drag a node onto the canvas. JSX and IaC are written for you immediately.
 - **Code → Visual:** Type a component in the Monaco editor. The graph renders the node in the correct architectural tier instantly.
 
-### ⚙️ &nbsp;Tailwind-Inspired Configuration
+###  &nbsp;Tailwind-Inspired Configuration
 
 Resource configuration lives in the `className` prop. No boilerplate. No looking up parameter group names.
 
@@ -89,15 +97,15 @@ Resource configuration lives in the `className` prop. No boilerplate. No looking
 
 The compiler handles subnet associations, parameter groups, and backup configuration automatically.
 
-### 🛡️ &nbsp;Architectural Guardrails
+###  &nbsp;Architectural Guardrails
 
 The validation engine checks the graph before compilation runs. It blocks illegal configurations — databases outside subnets, open security groups, missing execution roles — so broken architectures simply cannot be deployed.
 
-### 🔐 &nbsp;Production Auth System
+###  &nbsp;Production Auth System
 
 Full Supabase integration with email/password and OAuth via GitHub and Google. Race-condition-safe routing with `replace: true` prevents auth bounce loops and broken back-button behavior after OAuth redirects.
 
-### 🚀 &nbsp;Local Deployment Bridge
+###  &nbsp;Local Deployment Bridge
 
 A companion Node.js/Express daemon bridges the browser to your host machine. It receives the compiled `.tf` output via POST and executes `terraform apply` using your local AWS CLI credentials — no CI/CD pipeline required for local deployments.
 

@@ -44,6 +44,7 @@ Write standard JSX with Tailwind-inspired configuration classes. The internal Ab
     <Fargate className="mem-2gb cpu-1 port-8080" name="api-service" />
   </VPC>
 </Infrastructure>
+```
 
 ## What is CloudAST?
 

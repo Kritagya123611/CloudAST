@@ -309,8 +309,8 @@ export default function Landing() {
   const { user } = useAuth();
   // Typewriters
   const typedHero = useTypewriter("BUILT LIKE COMPONENTS", 70, 500);
-  const typedCmd = useTypewriter('react2aws compile --target terraform', 40, 1500);
-  const isCmdDone = typedCmd.length >= 'react2aws compile --target terraform'.length;
+  const typedCmd = useTypewriter('CloudAST compile --target terraform', 40, 1500);
+  const isCmdDone = typedCmd.length >= 'CloudAST compile --target terraform'.length;
 
   useEffect(() => {
     const el = document.createElement('style');
@@ -333,15 +333,8 @@ export default function Landing() {
         borderBottom:'1px solid rgba(255,255,255,.05)',
       }}>
         <div onClick={() => navigate('/')} style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer' }}>
-          <div style={{
-            width:28, height:28, borderRadius:4,
-            background:'var(--orange)',
-            display:'flex', alignItems:'center', justifyContent:'center',
-          }}>
-            <GitBranch size={14} color="#fff" strokeWidth={2.5} />
-          </div>
           <span style={{ fontFamily:'var(--display)', fontSize:'1.4rem', letterSpacing:'.08em', color:'var(--text)' }}>
-            REACT2AWS
+              CloudAST
           </span>
         </div>
 
@@ -485,7 +478,7 @@ export default function Landing() {
             THE ACTUAL <span style={{ color:'var(--orange)' }}>ARCHITECTURE.</span>
           </h2>
           <p style={{ fontFamily:'var(--sans)', color:'var(--muted2)', marginTop:16, maxWidth:500, margin:'16px auto 0' }}>
-            No generic marketing fluff. Here is exactly how the React2AWS engine works under the hood.
+            No generic marketing fluff. Here is exactly how the CloudAST engine works under the hood.
           </p>
         </div>
 
@@ -621,7 +614,7 @@ export default function Landing() {
           <div style={{ width:24, height:24, borderRadius:4, background:'var(--orange)', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <GitBranch size={12} color="#fff" strokeWidth={2.5} />
           </div>
-          <span style={{ fontFamily:'var(--display)', fontSize:'1.2rem', letterSpacing:'.08em', color:'var(--text)' }}>REACT2AWS</span>
+          <span style={{ fontFamily:'var(--display)', fontSize:'1.2rem', letterSpacing:'.08em', color:'var(--text)' }}>CloudAST</span>
         </div>
         <div style={{ fontFamily: 'var(--mono)', fontSize: '0.75rem', color: 'var(--muted)' }}>
           © 2026 CloudAST Engine. MIT License.

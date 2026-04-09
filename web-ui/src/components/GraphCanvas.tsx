@@ -21,7 +21,7 @@ function GraphCanvasInner({ blueprint, onBlueprintChange }: GraphCanvasProps) {
   useEffect(() => {
     const newNodes: any[] = [];
     const newEdges: any[] = [];
-    let rootX = 150; // Shifted right slightly to account for the floating dock
+    let rootX = 150; 
     let childY = 150;
 
     Object.values(blueprint.resources).forEach((res) => {
@@ -75,8 +75,6 @@ function GraphCanvasInner({ blueprint, onBlueprintChange }: GraphCanvasProps) {
       }
     });
   }, [onNodesChange]);
-
-  // ── DND LOGIC ──
   const onDragOver = useCallback((event: any) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
@@ -123,8 +121,6 @@ function GraphCanvasInner({ blueprint, onBlueprintChange }: GraphCanvasProps) {
     event.dataTransfer.setData('text/plain', nodeType); 
     event.dataTransfer.effectAllowed = 'move';
   };
-
-  // ✨ NEW: Floating Tool Dock Styles
   const dockBtnStyle = { 
     display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center',
     width: '64px', height: '60px', 
@@ -137,8 +133,6 @@ function GraphCanvasInner({ blueprint, onBlueprintChange }: GraphCanvasProps) {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', background: '#000' }} ref={reactFlowWrapper}>
-      
-{/* ── THE FLOATING DOCK ── */}
       <div style={{ 
         position: 'absolute', top: '24px', left: '24px', zIndex: 10,
         background: 'rgba(10, 10, 10, 0.85)', backdropFilter: 'blur(12px)',
@@ -146,8 +140,6 @@ function GraphCanvasInner({ blueprint, onBlueprintChange }: GraphCanvasProps) {
         padding: '8px', display: 'flex', flexDirection: 'column', gap: '8px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
       }}>
-        
-        {/* Clean CSS instead of inline JS hover events */}
         <style>{`
           .tool-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -190,10 +182,7 @@ function GraphCanvasInner({ blueprint, onBlueprintChange }: GraphCanvasProps) {
           <Zap size={18} />
           Lambda
         </div>
-
       </div>
-
-      {/* ── THE MAIN CANVAS ── */}
       <ReactFlow
         nodes={nodes} edges={edges}
         onNodesChange={handleNodesChange}

@@ -258,8 +258,6 @@ export default function Auth() {
     }}>
       <div className="noise" aria-hidden />
       <div className="grid-bg" />
-
-      {/* Ambient */}
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
         transform: 'translate(-50%, -55%)',
@@ -267,8 +265,6 @@ export default function Auth() {
         background: 'radial-gradient(circle, rgba(232,80,10,.07) 0%, transparent 65%)',
         pointerEvents: 'none',
       }} />
-
-      {/* Logo */}
       <Link to="/" style={{
         position: 'absolute', top: 20, left: 24,
         textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 9, zIndex: 20,
@@ -283,11 +279,7 @@ export default function Auth() {
           CLOUDAST
         </span>
       </Link>
-
-      {/* Card */}
       <div className="auth-card">
-
-        {/* Header - TIGHTENED MARGIN */}
         <div style={{ marginBottom: 20 }}>
           <div style={{
             fontFamily: 'var(--mono)', fontSize: '.62rem',
@@ -300,7 +292,7 @@ export default function Auth() {
           </div>
           <h2 style={{
             fontFamily: 'var(--display)',
-            fontSize: '2.2rem', /* Slightly smaller */
+            fontSize: '2.2rem', 
             letterSpacing: '.05em',
             lineHeight: .92,
             color: 'var(--text)',
@@ -308,8 +300,6 @@ export default function Auth() {
             {isLogin ? 'WELCOME\nBACK.' : 'CREATE\nACCOUNT.'}
           </h2>
         </div>
-
-        {/* Tab toggle */}
         <div className="tab-wrap">
           <button type="button" className={`tab-btn${isLogin ? ' active' : ''}`} onClick={() => setIsLogin(true)}>
             Sign In
@@ -318,15 +308,11 @@ export default function Auth() {
             Register
           </button>
         </div>
-
-        {/* Error */}
         {errorMsg && (
           <div className="error-box">
             ✕ &nbsp;{errorMsg}
           </div>
         )}
-
-        {/* Social */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 0 }}>
           <button type="button" className="social-btn" onClick={() => handleSocialLogin('github')}>
             <svg height="15" width="15" viewBox="0 0 16 16" fill="currentColor">
@@ -344,14 +330,11 @@ export default function Auth() {
             Continue with Google
           </button>
         </div>
-
         <div className="divider">
           <div className="divider-line" />
           <span className="divider-text">or</span>
           <div className="divider-line" />
         </div>
-
-        {/* Form */}
         <form onSubmit={handleAuth}>
           <div style={{ marginBottom: 14 }}>
             <label className="field-label">Email</label>

@@ -1,12 +1,3 @@
-//This file will contain the logic to turn each resource type into a string of 
-// Terraform code.
-//from my analysis what we are doing is that we are :
-//1. Looping through all the resources in our blueprint (state)
-//2. For each resource, we check its type and generate the corresponding HCL code using a switch statement
-//3. We handle specific properties for each resource type (like engine, storageGb for RDS) and also include any parent-child relationships (like VPC associations)
-//4. Finally, we concatenate all the generated HCL code into a single string that represents the entire infrastructure as code configuration.
-// generators/hcl-generator/formatter.ts
-
 import { InfrastructureState, AWSResource } from '../../core/schema/ast-types';
 
 export function generateTerraform(state: InfrastructureState): string {
@@ -17,7 +8,6 @@ provider "aws" {
   region = "us-east-1"
 }`;
 
-  // Loop through every resource in our blueprint
   for (const id in state.resources) {
     const resource = state.resources[id];
     hcl += renderResource(resource);
@@ -78,7 +68,7 @@ resource "aws_s3_bucket" "${res.id}" {
   }
 }
 
-# 🔒 AUTOMATED SECURITY: Enforce AES256 Encryption
+# AUTOMATED SECURITY: Enforce AES256 Encryption
 resource "aws_s3_bucket_server_side_encryption_configuration" "${res.id}_encryption" {
   bucket = aws_s3_bucket.${res.id}.id
   rule {
@@ -88,7 +78,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "${res.id}_encrypt
   }
 }
 
-# 🔒 AUTOMATED SECURITY: Block Public Access
+# AUTOMATED SECURITY: Block Public Access
 resource "aws_s3_bucket_public_access_block" "${res.id}_access" {
   bucket                  = aws_s3_bucket.${res.id}.id
   block_public_acls       = true
@@ -97,7 +87,7 @@ resource "aws_s3_bucket_public_access_block" "${res.id}_access" {
   restrict_public_buckets = true
 }
 
-# 🛡️ AUTOMATED IAM: Principle of Least Privilege
+# AUTOMATED IAM: Principle of Least Privilege
 resource "aws_iam_role" "${res.id}_access_role" {
   name = "${res.id}-read-only-role"
   assume_role_policy = jsonencode({

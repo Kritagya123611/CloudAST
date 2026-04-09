@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import Editor from '@monaco-editor/react'
 import { Play, Save, Code2, LayoutDashboard, ChevronDown, FileCode2, FolderTree, GitBranch } from 'lucide-react'
 import { Link } from 'react-router-dom'
-
-// Import our engine functions!
 import { parseJSXToState } from '../../../parsers/jsx-parser/babel-visitor'
 import { generateTerraform } from '../../../generators/hcl-generator/formatter'
 import { parseHCLToState } from '../../../parsers/hcl-parser/custom-parser'
@@ -15,33 +13,25 @@ import { generateCloudFormation } from './../generators/polyglot-engine/cfn-gene
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 
- // This function defines the exact colors from your screenshot
 const handleEditorWillMount = (monaco: any) => {
   monaco.editor.defineTheme('cloudast-theme', {
     base: 'vs-dark',
     inherit: true,
     rules: [
-      // 1. Tags (<Infrastructure>, <VPC>) - Golden Orange
       { token: 'tag', foreground: 'F59E0B', fontStyle: 'bold' },
-      { token: 'identifier', foreground: 'F59E0B' }, // Monaco sometimes maps JSX tags here
-      
-      // 2. Attributes (className, name) - Purple
+      { token: 'identifier', foreground: 'F59E0B' }, 
       { token: 'attribute.name', foreground: 'A78BFA' },
       { token: 'type.identifier', foreground: 'A78BFA' },
-      
-      // 3. Strings ("cidr-10.0.0.0/16") - Bright Green
       { token: 'string', foreground: '34D399' },
       { token: 'attribute.value', foreground: '34D399' },
-      
-      // 4. Brackets and equals signs (<, >, =, /) - Muted Gray
       { token: 'delimiter', foreground: '8A8A8A' },
       { token: 'delimiter.html', foreground: '8A8A8A' },
     ],
     colors: {
-      'editor.background': '#050505', // Your app's deep black background
+      'editor.background': '#050505', 
       'editor.foreground': '#EFEFEF',
       'editorLineNumber.foreground': '#555555',
-      'editorCursor.foreground': '#E8500A', // Orange cursor
+      'editorCursor.foreground': '#E8500A',
       'editor.lineHighlightBackground': '#111111',
       'editor.selectionBackground': '#222222'
     }
@@ -53,10 +43,6 @@ const DEFAULT_JSX = `<Infrastructure>
     <RDS className="engine-postgres storage-100gb multi-az" name="api-db" />
   </VPC>
 </Infrastructure>`
-
-/* ─────────────────────────────────────────────────────────────
-   IDE STYLES (VS Code / Linear Aesthetic)
-───────────────────────────────────────────────────────────── */
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
@@ -129,18 +115,13 @@ export default function Studio() {
   const [jsxCode, setJsxCode] = useState(DEFAULT_JSX)
   const [hclCode, setHclCode] = useState('')
   const [currentBlueprint, setCurrentBlueprint] = useState<InfrastructureState>({ resources: {} })
-  
   const [viewMode, setViewMode] = useState<'code' | 'visual'>('code')
   const [targetLanguage, setTargetLanguage] = useState<'terraform' | 'pulumi' | 'cloudformation'>('cloudformation')
-
-  // --- NEW SAVE STATE ---
   const { user } = useAuth();
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveName, setSaveName] = useState('Production Architecture');
   const [saveRegion, setSaveRegion] = useState('us-east-1');
   const [isSaving, setIsSaving] = useState(false);
-
-  // --- NEW SAVE FUNCTION ---
   const executeSave = async () => {
     if (!user) {
       alert("Error: You must be logged in to save.");
@@ -149,15 +130,13 @@ export default function Studio() {
 
     setIsSaving(true);
     const nodeCount = Object.keys(currentBlueprint.resources).length;
-
-    // Insert the blueprint into Supabase
     const { error } = await supabase.from('blueprints').insert([{
       user_id: user.id,
       name: saveName,
       region: saveRegion,
       status: 'active',
       nodes_count: nodeCount,
-      jsx_code: jsxCode // Saves the actual code!
+      jsx_code: jsxCode 
     }]);
 
     setIsSaving(false);
@@ -167,11 +146,9 @@ export default function Studio() {
       alert("Failed to save. Check console for details.");
     } else {
       setShowSaveModal(false);
-      // Optional: Give visual feedback that it saved!
     }
   };
 
-  // Inject Styles
   useEffect(() => {
     const el = document.createElement('style'); el.textContent = STYLE; document.head.appendChild(el);
     return () => { document.head.removeChild(el); };
@@ -195,11 +172,7 @@ export default function Studio() {
   const handleHclChange = (value: string | undefined) => {
     if (value === undefined) return;
     setHclCode(value);
-    
-    // ✨ THE CIRCUIT BREAKER: Stop the HCL parser from trying to read TypeScript or JSON!
-    // This stops the Bidirectional Death Loop dead in its tracks.
     if (targetLanguage !== 'terraform') return;
-
     try {
       const blueprint = parseHCLToState(value);
       setCurrentBlueprint(blueprint);
@@ -222,8 +195,6 @@ export default function Studio() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--bg-ide)' }}>
-      
-      {/* ── TOP NAV BAR ── */}
       <div style={{ height: '54px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px', backgroundColor: 'var(--bg-panel)' }}>
         
         {/* Left: Branding & Project */}
@@ -238,8 +209,7 @@ export default function Studio() {
             <span style={{ color: 'var(--text-main)' }}>workspace</span> / production-vpc
           </span>
         </div>
-        
-        {/* Center: View Toggle */}
+
         <div className="segmented-control">
           <button className={`segment-btn ${viewMode === 'code' ? 'active' : ''}`} onClick={() => setViewMode('code')}>
             <Code2 size={14} /> Code Editor
@@ -249,13 +219,12 @@ export default function Studio() {
           </button>
         </div>
 
-        {/* Right: Target Output & Actions */}
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <div className="target-select-wrapper">
             <select className="target-select" value={targetLanguage} onChange={(e) => setTargetLanguage(e.target.value as any)}>
-              <option value="terraform">🎯 Target: Terraform (HCL)</option>
-              <option value="pulumi">🎯 Target: Pulumi (TS)</option>
-              <option value="cloudformation">🎯 Target: CloudFormation</option>
+              <option value="terraform"> Target: Terraform (HCL)</option>
+              <option value="pulumi"> Target: Pulumi (TS)</option>
+              <option value="cloudformation"> Target: CloudFormation</option>
             </select>
             <ChevronDown size={14} className="select-icon" />
           </div>
@@ -266,10 +235,8 @@ export default function Studio() {
         </div>
       </div>
 
-      {/* ── IDE BODY ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        
-        {/* SIDEBAR */}
+
         <div style={{ width: '220px', borderRight: '1px solid var(--border)', backgroundColor: 'var(--bg-panel)', display: 'flex', flexDirection: 'column' }}>
           <div className="panel-header"><FolderTree size={12} /> Explorer</div>
           <div style={{ padding: '12px 0' }}>
@@ -285,7 +252,6 @@ export default function Studio() {
           </div>
         </div>
 
-        {/* PANE 1: Editor/Canvas Area */}
         <div style={{ flex: viewMode === 'visual' ? 1.5 : 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)', position: 'relative', backgroundColor: '#000' }}>
           
           {viewMode === 'code' ? (
@@ -307,8 +273,6 @@ export default function Studio() {
           )}
 
         </div>
-
-        {/* PANE 2: Polyglot Output */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#000' }}>
           <div className="panel-header">
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', textTransform: 'none' }}>
@@ -333,7 +297,6 @@ export default function Studio() {
         </div>
 
       </div>
-      {/* ── THE SAVE MODAL ── */}
       {showSaveModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,

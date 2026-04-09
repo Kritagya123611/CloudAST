@@ -8,7 +8,7 @@ export function generateCloudFormation(state: InfrastructureState): string {
   };
 
   Object.values(state.resources).forEach(res => {
-    const logicalId = res.id.replace(/[^a-zA-Z0-9]/g, ''); // CFN requires alphanumeric IDs
+    const logicalId = res.id.replace(/[^a-zA-Z0-9]/g, ''); 
     
     if (res.type === 'VPC') {
       template.Resources[logicalId] = {

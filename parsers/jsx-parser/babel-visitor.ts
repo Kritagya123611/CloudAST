@@ -1,9 +1,3 @@
-/*
-This is the heavy lifter. Babel will read the JSX, find the <VPC> or <RDS> tags, 
-grab the className, pass it to our helper above, and save it to our blueprint.
-*/ 
-// parsers/jsx-parser/babel-visitor.ts
-// parsers/jsx-parser/babel-visitor.ts
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import { InfrastructureState, AWSResource, AWSResourceType } from '../../core/schema/ast-types';
@@ -21,8 +15,6 @@ export function parseJSXToState(jsxCode: string): InfrastructureState {
     JSXElement(path) {
       const openingElement = path.node.openingElement;
       const componentName = (openingElement.name as any).name as AWSResourceType;
-
-      // FIX 1: Updated to match your AWSResourceType
       const validComponents: AWSResourceType[] = [
         'EC2', 'S3', 'Lambda', 'DynamoDB', 'RDS', 'VPC', 'Subnet', 'SecurityGroup', 'IAMRole', 'CloudFormationStack'
       ];
@@ -37,8 +29,6 @@ export function parseJSXToState(jsxCode: string): InfrastructureState {
         });
 
         if (!id) return; 
-
-        // FIX 2: Changed parentId to parent to match BaseResources
         let parent = undefined;
         const parentJSX = path.findParent((p) => p.isJSXElement());
         if (parentJSX) {
@@ -48,14 +38,12 @@ export function parseJSXToState(jsxCode: string): InfrastructureState {
         }
 
         const configProps = parseClassName(className);
-
-        // FIX 3: Cast to AWSResource, not InfrastructureResource
         state.resources[id] = {
           id,
           type: componentName,
           parent,
-          properties: configProps, // Based on your BaseResources definition
-          ...configProps           // Spread at top level for specific resource interfaces
+          properties: configProps, 
+          ...configProps       
         } as AWSResource;
       }
     }

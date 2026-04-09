@@ -3,9 +3,6 @@ import { useEffect, useState } from 'react';
 import { Terminal, GitBranch, ArrowRight, Database, Network, Code2, Cpu, Zap, Box, HardDrive, Layers, FileCode2, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-/* ─────────────────────────────────────────────────────────────
-   STYLES
-───────────────────────────────────────────────────────────── */
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
 
@@ -231,9 +228,6 @@ const STYLE = `
   }
 `;
 
-/* ─────────────────────────────────────────────────────────────
-   TYPEWRITER HOOK
-───────────────────────────────────────────────────────────── */
 const useTypewriter = (text: string, speed = 60, delay = 0) => {
   const [out, setOut] = useState('');
   const [go, setGo] = useState(false);
@@ -256,9 +250,6 @@ const useTypewriter = (text: string, speed = 60, delay = 0) => {
   return out;
 };
 
-/* ─────────────────────────────────────────────────────────────
-   DATA ARRAYS
-───────────────────────────────────────────────────────────── */
 const TICKS = [
   '<ReactFlowProvider />','Supabase_Auth.getSession()','buildAST(nodes, edges)',
   'generator.toTerraform()','PostgreSQL_RLS_Policies','useNodesState()',
@@ -301,9 +292,6 @@ const SUPPORTED_RESOURCES = [
   { name: 'DynamoDB', icon: <Layers size={24} color="#818CF8" />, desc: 'NoSQL database with on-demand scaling.' }
 ];
 
-/* ─────────────────────────────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────────────────────────── */
 export default function Landing() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -354,7 +342,6 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* ── HERO SECTION ── */}
       <section style={{
         position:'relative', minHeight:'100vh',
         display:'flex', flexDirection:'column',
@@ -362,12 +349,9 @@ export default function Landing() {
         padding:'100px 24px 60px',
         textAlign:'center', overflow:'hidden',
       }}>
-        {/* The rich backgrounds */}
         <div className="hero-glow" />
         <div className="grid-bg" />
         <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:1, height:150, background:'linear-gradient(to bottom, var(--orange), transparent)', opacity:0.4 }} />
-
-        {/* Badge */}
         <div className="fade-up" style={{ animationDelay:'0ms', marginBottom:24, zIndex: 10 }}>
           <span style={{
             fontFamily:'var(--mono)', fontSize:'.7rem', letterSpacing:'.12em',
@@ -381,7 +365,6 @@ export default function Landing() {
           </span>
         </div>
 
-        {/* Headline */}
         <h1 className="fade-up" style={{
           animationDelay:'100ms',
           fontFamily:'var(--display)',
@@ -397,7 +380,6 @@ export default function Landing() {
           </span>
         </h1>
 
-        {/* Sub */}
         <p className="fade-up" style={{
           animationDelay:'200ms',
           fontFamily:'var(--sans)', fontWeight:400,
@@ -408,7 +390,6 @@ export default function Landing() {
           Architect enterprise <span style={{ color: '#3ECF8E' }}>AWS</span> environments using familiar <span style={{ color: '#ffffff' }}>React (JSX)</span>. or a bidirectional visual canvas. Instantly compile your topologies into production-ready <span style={{ color: '#ffffff' }}>Terraform, Pulumi, or CloudFormation.</span>
         </p>
 
-        {/* CTAs */}
         <div className="fade-up col-sm" style={{ animationDelay:'300ms', display:'flex', gap:16, flexWrap:'wrap', justifyContent:'center', marginBottom:60, zIndex: 10 }}>
           <button className="btn-fire" style={{ fontSize:'.95rem', padding:'14px 28px' }} onClick={() => navigate('/dashboard')}>
             Launch App <ArrowRight size={16} />
@@ -418,7 +399,6 @@ export default function Landing() {
           </button>
         </div>
 
-        {/* Real Terminal Output (Enlarged) */}
         <div className="fade-up term-wrap" style={{ animationDelay:'400ms', width:'100%', maxWidth: 850, minHeight: 280, textAlign:'left', zIndex: 10 }}>
           <div className="term-bar">
             <div className="term-dot" style={{ background:'#FF5F56' }} />
@@ -460,7 +440,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── TICKER ── */}
       <div className="ticker-wrap">
         <div className="ticker-track">
           {[...TICKS, ...TICKS].map((t, i) => (
@@ -471,7 +450,7 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* ── THE ACTUAL ARCHITECTURE SECTION (Symmetrical Grid) ── */}
+
       <section style={{ padding:'100px 32px', maxWidth:1100, margin:'0 auto', position: 'relative' }}>
         <div style={{ textAlign:'center', marginBottom: 60 }}>
           <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(2.5rem, 5vw, 4rem)', letterSpacing:'.06em', color:'var(--text)', lineHeight:.95 }}>
@@ -482,7 +461,6 @@ export default function Landing() {
           </p>
         </div>
 
-        {/* Changed to explicit 2x2 grid class */}
         <div className="feat-grid">
           {FEATURES.map((f, i) => (
             <div key={i} className="feat-card">
@@ -499,7 +477,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS PIPELINE ── */}
       <section style={{ padding: '80px 24px', background: 'var(--bg2)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>How It Works</h2>
@@ -529,7 +506,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── INTUITIVE SYNTAX SECTION ── */}
       <section style={{ padding: '100px 24px', textAlign: 'center', position: 'relative' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>Intuitive Syntax</h2>
@@ -589,7 +565,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── SUPPORTED RESOURCES GRID ── */}
       <section style={{ padding: '60px 24px 120px', maxWidth: '1100px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>Supported Resources</h2>
@@ -608,7 +583,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#050505', flexWrap: 'wrap', gap: '20px' }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <div style={{ width:24, height:24, borderRadius:4, background:'var(--orange)', display:'flex', alignItems:'center', justifyContent:'center' }}>

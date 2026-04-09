@@ -4,9 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import { GitBranch, Plus, LogOut, LayoutGrid, Clock, Server, Activity } from 'lucide-react';
 
-/* ─────────────────────────────────────────────────────────────
-   STYLES (Unchanged)
-───────────────────────────────────────────────────────────── */
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
@@ -59,8 +56,6 @@ const STYLE = `
   .badge-mono { font-family: var(--mono); font-size: 0.7rem; padding: 4px 8px; border-radius: 3px; background: rgba(255,255,255,0.05); color: var(--muted2); border: 1px solid var(--border); letter-spacing: 0.05em; }
   .badge-active { background: rgba(39, 200, 64, 0.1); color: #27C840; border-color: rgba(39, 200, 64, 0.2); }
 `;
-
-// Helper function to format timestamps nicely
 function timeAgo(dateString: string) {
     const date = new Date(dateString);
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -80,8 +75,6 @@ function timeAgo(dateString: string) {
 export default function Dashboard() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    
-    // Database State
     const [blueprints, setBlueprints] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -90,8 +83,6 @@ export default function Dashboard() {
         const el = document.createElement('style'); el.textContent = STYLE; document.head.appendChild(el);
         return () => { document.head.removeChild(el); };
     }, []);
-
-    // ── DB FETCH: Load User's Blueprints ──
     useEffect(() => {
         if (!user) return;
         
@@ -118,19 +109,13 @@ export default function Dashboard() {
         await logout(); 
         navigate('/'); 
     };
-
-    // ── DB INSERT: Create a New Blank Blueprint ──
 const handleCreateNew = () => {
-        // Just send them to a blank canvas! 
-        // They will save it to the database later using the Studio's Save button.
         navigate('/studio');
     };
 
     return (
         <div style={{ minHeight: '100vh', position: 'relative' }}>
             <div className="grid-bg" />
-
-            {/* ── TOP NAVIGATION ── */}
             <nav className="dash-nav">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                     <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
@@ -157,10 +142,7 @@ const handleCreateNew = () => {
                 </div>
             </nav>
 
-            {/* ── MAIN CONTENT ── */}
             <main style={{ padding: '60px 40px', maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-                
-                {/* Header Section */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
                     <div>
                         <h1 style={{ fontSize: '2rem', fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 8px 0' }}>Infrastructure Blueprints</h1>
@@ -171,10 +153,8 @@ const handleCreateNew = () => {
                     </button>
                 </div>
 
-                {/* Project Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                    
-                    {/* Create New Card */}
+                
                     <div className="project-card card-new" onClick={handleCreateNew} style={{ pointerEvents: creating ? 'none' : 'auto' }}>
                         <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                             {creating ? <Activity size={24} className="blink" /> : <Plus size={24} />}
@@ -184,19 +164,14 @@ const handleCreateNew = () => {
                         </h3>
                         <p style={{ fontSize: '0.8rem', marginTop: 8, textAlign: 'center', opacity: 0.7 }}>Start a blank architecture graph</p>
                     </div>
-
-                    {/* Loading State */}
                     {loading && (
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px', color: 'var(--muted2)' }}>
                             Fetching resources...
                         </div>
                     )}
-
-                    {/* Mapped REAL Projects from Supabase */}
                     {!loading && blueprints.map(proj => (
                         <div key={proj.id} className="project-card" onClick={() => navigate('/studio')}>
-                            
-                            {/* Card Top */}
+            
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ width: 40, height: 40, borderRadius: 6, background: 'rgba(232,80,10,0.1)', border: '1px solid rgba(232,80,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--orange)' }}>
                                     <Server size={20} />
@@ -205,8 +180,6 @@ const handleCreateNew = () => {
                                     {proj.status === 'active' ? '● ONLINE' : 'IDLE'}
                                 </span>
                             </div>
-
-                            {/* Card Middle */}
                             <div style={{ marginTop: 24, marginBottom: 24 }}>
                                 <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: '0 0 8px 0' }}>{proj.name}</h3>
                                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -217,8 +190,6 @@ const handleCreateNew = () => {
                                     </span>
                                 </div>
                             </div>
-
-                            {/* Card Bottom */}
                             <div style={{ paddingTop: 16, borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'var(--sans)' }}>
                                 <Clock size={12} style={{ marginRight: 6 }} /> Last modified {timeAgo(proj.updated_at)}
                             </div>

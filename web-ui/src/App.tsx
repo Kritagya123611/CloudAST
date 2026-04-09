@@ -11,16 +11,12 @@ import Dashboard from './pages/Dashboard';
 
 export default function App() {
   return (
-    // 2. THIS IS THE FIX: AuthProvider MUST wrap everything!
     <AuthProvider>
       <Router>
         <div style={{ backgroundColor: '#1e1e1e', minHeight: '100vh', fontFamily: 'sans-serif' }}>
           <Routes>
-            {/* Public Routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Auth />} />
-
-            {/* Protected Routes */}
             <Route 
               path="/dashboard" 
               element={

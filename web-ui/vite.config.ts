@@ -4,9 +4,17 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Add this 'define' block to fake the Node process variable
+  
+  // Keep your existing Node polyfills so the browser doesn't crash
   define: {
     'process.env': {},
     'global': 'window'
+  },
+  
+  // ADD THIS: Fixes the Rollup Babel build error in Vercel
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    }
   }
 })

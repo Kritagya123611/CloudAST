@@ -1,6 +1,6 @@
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
-import { InfrastructureState, AWSResource, AWSResourceType } from '../../core/schema/ast-types';
+import { InfrastructureState, AWSResource, AWSResourceType } from '../../../../core/schema/ast-types';
 import { parseClassName } from '../classname-parser/tailwind-infra';
 
 export function parseJSXToState(jsxCode: string): InfrastructureState {

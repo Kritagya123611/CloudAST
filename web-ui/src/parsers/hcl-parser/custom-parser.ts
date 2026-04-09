@@ -1,4 +1,4 @@
-import { InfrastructureState, AWSResource, AWSResourceType } from '../../core/schema/ast-types';
+import { InfrastructureState, AWSResource, AWSResourceType } from '../../../../core/schema/ast-types';
 const resourceTypeMap: Record<string, AWSResourceType> = {
   'aws_vpc': 'VPC',
   'aws_db_instance': 'RDS',

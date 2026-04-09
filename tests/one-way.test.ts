@@ -1,5 +1,5 @@
 // tests/one-way.test.ts
-import { parseJSXToState } from '../parsers/jsx-parser/babel-visitor';
+import { parseJSXToState } from '../web-ui/src/parsers/jsx-parser/babel-visitor';
 
 const mockUserCode = `
   <Infrastructure>

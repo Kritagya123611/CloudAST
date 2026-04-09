@@ -7,8 +7,7 @@ export default defineConfig({
   
   // Keep your existing Node polyfills so the browser doesn't crash
   define: {
-    'process.env': {},
-    'global': 'window'
+    'process.env': {}
   },
   
   // ADD THIS: Fixes the Rollup Babel build error in Vercel

@@ -1,16 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  
-  // Keep your existing Node polyfills so the browser doesn't crash
-  define: {
-    'process.env': {}
-  },
-  
-  // ADD THIS: Fixes the Rollup Babel build error in Vercel
+  plugins: [
+    react(),
+    // This injects a true Node environment (process, global, Buffer) into the browser
+    nodePolyfills() 
+  ],
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,

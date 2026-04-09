@@ -77,7 +77,7 @@ export default function Dashboard() {
     const { user, logout } = useAuth();
     const [blueprints, setBlueprints] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [creating, setCreating] = useState(false);
+    const [creating] = useState(false);
 
     useEffect(() => {
         const el = document.createElement('style'); el.textContent = STYLE; document.head.appendChild(el);

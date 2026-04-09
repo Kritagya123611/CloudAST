@@ -121,15 +121,6 @@ function GraphCanvasInner({ blueprint, onBlueprintChange }: GraphCanvasProps) {
     event.dataTransfer.setData('text/plain', nodeType); 
     event.dataTransfer.effectAllowed = 'move';
   };
-  const dockBtnStyle = { 
-    display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center',
-    width: '64px', height: '60px', 
-    background: 'transparent', color: '#888', 
-    border: '1px solid transparent', borderRadius: '8px', 
-    cursor: 'grab', gap: '4px',
-    fontFamily: '"DM Sans", sans-serif', fontSize: '0.7rem', fontWeight: 600,
-    transition: 'all 0.2s ease'
-  };
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', background: '#000' }} ref={reactFlowWrapper}>

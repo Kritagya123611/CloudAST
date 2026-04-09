@@ -12,7 +12,7 @@ export function parseJSXToState(jsxCode: string): InfrastructureState {
   });
 
   traverse(ast, {
-    JSXElement(path) {
+    JSXElement(path: any) {
       const openingElement = path.node.openingElement;
       const componentName = (openingElement.name as any).name as AWSResourceType;
       const validComponents: AWSResourceType[] = [
@@ -30,7 +30,7 @@ export function parseJSXToState(jsxCode: string): InfrastructureState {
 
         if (!id) return; 
         let parent = undefined;
-        const parentJSX = path.findParent((p) => p.isJSXElement());
+        const parentJSX = path.findParent((p: any) => p.isJSXElement());
         if (parentJSX) {
            const parentOpening = (parentJSX.node as any).openingElement;
            const parentNameAttr = parentOpening.attributes.find((a: any) => a.name.name === 'name');

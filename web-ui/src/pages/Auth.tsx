@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import {  Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import { useAuth } from '../context/AuthContext'
 import { GitBranch, ArrowRight } from 'lucide-react'
 
 const STYLE = `

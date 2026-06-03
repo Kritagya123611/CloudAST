@@ -12,6 +12,7 @@ import { generatePulumi } from './../generators/polyglot-engine/pulumi-generator
 import { generateCloudFormation } from './../generators/polyglot-engine/cfn-generator'
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
+import { deployToAWS } from '../services/aws-deploy';
 
 const handleEditorWillMount = (monaco: any) => {
   monaco.editor.defineTheme('cloudast-theme', {

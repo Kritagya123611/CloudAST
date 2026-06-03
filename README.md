@@ -18,141 +18,84 @@
 </p>
 
 <br />
-
-[**Launch Studio**](#local-development-setup) &nbsp;&nbsp;|&nbsp;&nbsp; [**Read the Docs**](#table-of-contents) &nbsp;&nbsp;|&nbsp;&nbsp; [**Report a Bug**](https://github.com/your-org/cloudast/issues)
-
-<br />
 </div>
 
 ---
 
-## The Paradigm: React for Infrastructure
+## The Paradigm
 
-CloudAST eliminates the cognitive load of managing thousands of lines of YAML or HCL. By treating cloud resources as composable UI components, you can architect infrastructure using the exact same mental models used for modern frontend development.
+Modern infrastructure tooling hasn't caught up with how developers actually think. You already model UI as a hierarchy of composable components — VPCs wrap subnets, subnets contain compute, compute talks to databases. CloudAST makes that mental model the actual syntax.
 
-If you can build a React application, you can now provision enterprise-grade AWS infrastructure.
-
-### The Syntax Translation
-
-Write standard JSX with Tailwind-inspired configuration classes. The internal Abstract Syntax Tree (AST) engine validates your logic and compiles it into the industry-standard tools your organization already uses.
-
-**Input: React (JSX)**
-```jsx
-<Infrastructure>
-  <VPC className="cidr-10.0.0.0/16 region-us-east-1">
-    <RDS className="engine-postgres instance-lg multi-az" name="primary-db" />
-    <Fargate className="mem-2gb cpu-1 port-8080" name="api-service" />
-  </VPC>
-</Infrastructure>
-```
-
-## What is CloudAST?
-
-CloudAST is a **browser-based infrastructure compiler** that eliminates the gap between architectural intent and deployed code.
-
-You draw. The engine writes.
-
-```jsx
-<Infrastructure>
-  <VPC className="cidr-10.0.0.0/16 region-us-east-1">
-    <RDS className="engine-postgres multi-az" />
-    <Fargate className="mem-2gb cpu-1 port-8080" />
-    <Lambda className="runtime-nodejs22" />
-  </VPC>
-</Infrastructure>
-```
-
-That five-line JSX block compiles into a fully modular Terraform directory, a typed Pulumi stack, or a native CloudFormation template — your choice, in real time.
-
-No new proprietary DSL. No lock-in. The output is standard IaC your team already knows.
+**If you can build a React app, you can now provision enterprise AWS infrastructure.**
 
 ---
 
-## Core Features
+## Features
 
-###  &nbsp;Polyglot Compiler Engine
+### Polyglot Compiler Engine
 
-One internal AST. Three deployment targets. The compiler translates your JSX graph into whichever format your organization uses — with bidirectional sync for Terraform and read-only output for Pulumi and CloudFormation.
+One internal AST. Three deployment targets. The compiler parses your JSX graph and emits whichever format your organization already uses.
 
 | Target | Mode | Output |
 |---|---|---|
-| **Terraform (HCL)** | Bidirectional | Modular directory with `main.tf`, `variables.tf`, AWS modules |
-| **Pulumi (TypeScript)** | Read-only | Strongly-typed `@pulumi/aws` instantiations |
-| **AWS CloudFormation** | Read-only | Native JSON with `Refs`, `DependsOn`, and IAM roles |
+| Terraform (HCL) | Bidirectional | Modular directory: `main.tf`, `variables.tf`, AWS modules |
+| Pulumi (TypeScript) | Read-only | Strongly-typed `@pulumi/aws` instantiations |
+| AWS CloudFormation | Read-only | Native JSON with `Ref`, `DependsOn`, and IAM roles |
 
-###  &nbsp;Bidirectional Visual Canvas
+### Direct AWS Deployment
 
-Built on React Flow. The canvas and the code editor are two views into the same AST — they stay in perfect sync.
+CloudAST connects to your AWS account and deploys your stack without leaving the studio. No CLI installs. No copy-pasting configs.
 
-- **Visual → Code:** Drag a node onto the canvas. JSX and IaC are written for you immediately.
-- **Code → Visual:** Type a component in the Monaco editor. The graph renders the node in the correct architectural tier instantly.
+- Connect once using AWS credentials or an IAM role (stored encrypted, never logged)
+- Review the full changeset — resources to create, modify, or destroy — before anything touches prod
+- Watch the stack build live with real-time deployment status
+- Automatic rollback on any failure
 
-###  &nbsp;Tailwind-Inspired Configuration
+> **Note:** The browser-based deploy path targets CloudFormation. Terraform deployments are handled through the companion local deployment daemon (see [Local Deployment Bridge](#local-deployment-bridge)).
+
+### Bidirectional Visual Canvas
+
+Built on React Flow. The canvas and the Monaco editor are two views into the same AST — they stay in perfect sync.
+
+- **Visual → Code:** Drag a node onto the canvas. JSX and IaC output are generated immediately.
+- **Code → Visual:** Type a component in the editor. The graph renders the node in the correct architectural tier instantly.
+
+### Tailwind-Inspired Configuration
 
 Resource configuration lives in the `className` prop. No boilerplate. No looking up parameter group names.
 
 ```jsx
-<!-- Instead of 50 lines of Terraform: -->
-<RDS className="engine-postgres instance-lg multi-az storage-100gb" />
+{/* Instead of 50+ lines of Terraform: */}
+<RDS className="engine-postgres instance-lg multi-az storage-100gb backup-7d" />
 ```
 
-The compiler handles subnet associations, parameter groups, and backup configuration automatically.
+The compiler handles subnet associations, parameter groups, security group rules, and backup configuration automatically.
 
-###  &nbsp;Architectural Guardrails
+### Architectural Guardrails
 
-The validation engine checks the graph before compilation runs. It blocks illegal configurations — databases outside subnets, open security groups, missing execution roles — so broken architectures simply cannot be deployed.
+The validation engine checks the graph before compilation runs. It blocks illegal configurations — databases outside subnets, open security groups, missing IAM execution roles — so broken architectures cannot be deployed.
 
-###  &nbsp;Production Auth System
+### Big-Data & Analytics Primitives
 
-Full Supabase integration with email/password and OAuth via GitHub and Google. Race-condition-safe routing with `replace: true` prevents auth bounce loops and broken back-button behavior after OAuth redirects.
+CloudAST supports full-scale modern data pipeline topologies natively in the browser:
 
-###  &nbsp;Local Deployment Bridge
-
-A companion Node.js/Express daemon bridges the browser to your host machine. It receives the compiled `.tf` output via POST and executes `terraform apply` using your local AWS CLI credentials — no CI/CD pipeline required for local deployments.
-
----
-
-## The Compiler Pipeline
-
+```jsx
+<S3 className="encrypt-aes256 versioning-enabled" name="raw-data-sink" />
+<GlueCatalog name="events-registry" />
+<GlueCrawler className="schedule-cron target-s3" name="schema-discoverer" />
+<Athena className="workgroup-isolated results-encrypted" />
 ```
-  ┌─────────────────────────────────────────────────────────────┐
-  │                      Monaco Editor                          │
-  │              (JSX Input / Syntax Highlighting)              │
-  └──────────────────────────┬──────────────────────────────────┘
-                             │  JSX String
-                             ▼
-  ┌─────────────────────────────────────────────────────────────┐
-  │               Babel-Based Lexical Visitor                   │
-  │          (Tokenizes JSX → Component Hierarchy)              │
-  └──────────────────────────┬──────────────────────────────────┘
-                             │  Component Tree
-                             ▼
-  ┌─────────────────────────────────────────────────────────────┐
-  │              InfrastructureState AST Builder                │
-  │        (Maps hierarchy → internal JSON schema)              │
-  └──────────────────────────┬──────────────────────────────────┘
-                             │  AST JSON
-                             ▼
-  ┌─────────────────────────────────────────────────────────────┐
-  │                   Validation Engine                         │
-  │    (Edge validation · Security checks · Subnet bounds)      │
-  └──────────────────────────┬──────────────────────────────────┘
-                             │  Validated AST
-                    ┌────────┴────────┬────────────────┐
-                    ▼                 ▼                 ▼
-            ┌──────────┐    ┌─────────────┐    ┌──────────────┐
-            │  HCL Gen │    │   TS Gen    │    │   JSON Gen   │
-            │Terraform │    │   Pulumi    │    │CloudFormation│
-            └────┬─────┘    └──────┬──────┘    └──────┬───────┘
-                 └─────────────────┴───────────────────┘
-                                   │
-                                   ▼
-                     ┌─────────────────────────┐
-                     │   Deployment Daemon      │
-                     │  (Node.js local bridge)  │
-                     │  terraform apply → AWS   │
-                     └─────────────────────────┘
-```
+
+| Component | AWS Resources Scaffolded |
+|---|---|
+| `<GlueCatalog>` | `aws_glue_catalog_database` — decoupled metadata registry for schemaless file streams |
+| `<GlueCrawler>` | `aws_glue_crawler` with cron trigger + auto-generated least-privilege IAM role and read policies |
+| `<Athena>` | `aws_athena_workgroup` with isolated query environment tied to encrypted result storage |
+| `<S3>` | `aws_s3_bucket` + `aws_s3_bucket_server_side_encryption_configuration` + `aws_s3_bucket_public_access_block` |
+
+### Production Auth System
+
+Full Supabase integration with email/password and OAuth via GitHub and Google. Race-condition-safe routing with `replace: true` prevents auth bounce loops and back-button breakage after OAuth redirects. The auth pipeline dynamically toggles callback URLs between `localhost:5173` (development) and the production Vercel domain without manual configuration.
 
 ---
 
@@ -161,12 +104,63 @@ A companion Node.js/Express daemon bridges the browser to your host machine. It 
 | JSX Component | AWS Resources Scaffolded |
 |---|---|
 | `<VPC>` | VPC · Public & Private Subnets · Internet Gateway · NAT Gateway · Route Tables |
+| `<Subnet>` | Modular private/public network isolation with dynamic ingress rule parsing |
+| `<SecurityGroup>` | Ingress/egress rules from `ingressPorts` array prop |
 | `<RDS>` | DB Instance · Subnet Group · Parameter Group · Automated Backups |
 | `<Fargate>` | ECS Cluster · Task Definition · Execution Role · Security Group |
 | `<EC2>` | EC2 Instance · AMI · Key Pair · Instance Profile |
 | `<Lambda>` | Lambda Function · IAM Execution Role · CloudWatch Log Group |
 | `<S3>` | S3 Bucket · Public Access Block · Server-Side Encryption |
+| `<DynamoDB>` | NoSQL table with `hashKey`, `billingMode`, and on-demand capacity |
 | `<ALB>` | Application Load Balancer · Target Group · Listeners |
+| `<APIGateway>` | `aws_apigatewayv2_api` HTTP/REST boundary with auto-wired Lambda permissions |
+| `<GlueCatalog>` | Glue Database metadata registry |
+| `<GlueCrawler>` | Glue Crawler + IAM role + cron schedule |
+| `<Athena>` | Athena Workgroup with encrypted result bucket |
+
+---
+
+## The Compiler Pipeline
+
+```
+┌──────────────────────────────────────────┐
+│             Monaco Editor                │
+│        (JSX Input / Syntax Highlight)    │
+└─────────────────┬────────────────────────┘
+                  │ JSX string
+                  ▼
+┌──────────────────────────────────────────┐
+│         Babel-Based Lexical Visitor      │
+│     (Tokenizes JSX → Component Tree)     │
+└─────────────────┬────────────────────────┘
+                  │ Component hierarchy
+                  ▼
+┌──────────────────────────────────────────┐
+│       InfrastructureState AST Builder    │
+│      (Maps hierarchy → JSON schema)      │
+└─────────────────┬────────────────────────┘
+                  │ AST JSON
+                  ▼
+┌──────────────────────────────────────────┐
+│            Validation Engine             │
+│  (Edge rules · Security · Subnet bounds) │
+└──────┬──────────┬──────────┬─────────────┘
+       ▼          ▼          ▼
+  ┌─────────┐ ┌────────┐ ┌───────────────┐
+  │ HCL Gen │ │ TS Gen │ │   JSON Gen    │
+  │Terraform│ │ Pulumi │ │CloudFormation │
+  └────┬────┘ └───┬────┘ └───────┬───────┘
+       └──────────┴──────────────┘
+                  │
+       ┌──────────┴──────────┐
+       │                     │
+       ▼                     ▼
+┌─────────────┐    ┌──────────────────────┐
+│  AWS Direct │    │  Local Deploy Daemon │
+│   Deploy    │    │  (terraform apply)   │
+│(CloudFormn) │    │   via Node.js bridge │
+└─────────────┘    └──────────────────────┘
+```
 
 ---
 
@@ -174,16 +168,16 @@ A companion Node.js/Express daemon bridges the browser to your host machine. It 
 
 | Layer | Technology |
 |---|---|
-| **Frontend Framework** | React 18 + TypeScript + Vite |
-| **Visual Canvas** | React Flow |
-| **Code Editor** | Monaco Editor |
-| **Compiler** | Custom Babel-based AST visitor |
-| **Auth & Database** | Supabase (PostgreSQL + GoTrue) |
-| **Styling** | CSS-in-JS (custom design system) |
-| **Fonts** | Bebas Neue · DM Sans · DM Mono |
-| **Icons** | Lucide React |
-| **Deployment Bridge** | Node.js + Express |
-| **IaC Runtime** | Terraform CLI · AWS CLI |
+| Frontend | React 18 + TypeScript + Vite |
+| Visual Canvas | React Flow |
+| Code Editor | Monaco Editor |
+| Compiler | Custom Babel-based AST visitor |
+| Auth & Database | Supabase (PostgreSQL + GoTrue) |
+| Styling | CSS-in-JS (custom design system) |
+| Fonts | Syne · Instrument Sans · IBM Plex Mono |
+| Icons | Lucide React |
+| Local Deploy Bridge | Node.js + Express |
+| IaC Runtime | Terraform CLI · AWS CLI |
 
 ---
 
@@ -191,12 +185,10 @@ A companion Node.js/Express daemon bridges the browser to your host machine. It 
 
 ### Prerequisites
 
-Ensure the following are installed and configured on your machine:
-
 ```
-Node.js        v18.0.0 or higher
+Node.js        v18.0.0+
 Terraform CLI  Any recent version
-AWS CLI        Configured with deployment credentials (aws configure)
+AWS CLI        Configured with deployment credentials
 Supabase       A project with auth enabled
 ```
 
@@ -205,52 +197,48 @@ Supabase       A project with auth enabled
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/your-organization/cloudast.git
-cd cloudast
+git clone https://github.com/Kritagya123611/CloudAST.git
+cd CloudAST
 ```
 
 **2. Install dependencies**
 
 ```bash
-# Install frontend dependencies
+# Frontend
 cd web-ui && npm install
 
-# Install deployment bridge dependencies
+# Local deployment bridge
 cd ../deploy-server && npm install
 ```
 
 **3. Configure environment variables**
 
-Create a `.env.local` file inside the `web-ui` directory:
+Create `.env.local` inside `web-ui/`:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-> You can find both values in your Supabase project under **Settings → API**.
+Find both values in your Supabase project under **Settings → API**.
 
-**4. Enable OAuth providers** *(optional)*
+**4. Enable OAuth providers (optional)**
 
-In your Supabase dashboard go to **Authentication → Providers** and enable GitHub and/or Google. Set the redirect URL to:
+In your Supabase dashboard: **Authentication → Providers** → enable GitHub and/or Google.
 
-```
-http://localhost:5173/login
-```
+Set the redirect URL to `http://localhost:5173/login`.
 
-**5. Launch the platform**
-
-Open two terminal sessions and run:
+**5. Launch**
 
 ```bash
-# Terminal 1 — Client IDE
+# Terminal 1 — Studio IDE
 cd web-ui && npm run dev
 
 # Terminal 2 — Local Deployment Daemon
 cd deploy-server && node server.js
 ```
 
-The CloudAST IDE will be available at **[http://localhost:5173](http://localhost:5173)**.
+The CloudAST IDE will be available at `http://localhost:5173`.
 
 ---
 
@@ -259,17 +247,17 @@ The CloudAST IDE will be available at **[http://localhost:5173](http://localhost
 ### Writing Infrastructure as JSX
 
 ```jsx
-<Infrastructure>
-  <VPC className="cidr-10.0.0.0/16 region-us-east-1">
+<Infrastructure provider="aws" region="us-east-1">
+  <VPC className="cidr-10.0.0.0/16 az-2 nat-enabled">
 
-    {/* PostgreSQL database — multi-AZ, 100GB storage */}
-    <RDS className="engine-postgres storage-100gb multi-az" />
+    {/* PostgreSQL — multi-AZ, 100GB, 7-day backups */}
+    <RDS className="engine-postgres storage-100gb multi-az backup-7d" />
 
-    {/* Containerized API */}
-    <Fargate className="mem-2gb cpu-1 port-8080" />
+    {/* Containerized API — auto-scales 3–10 tasks */}
+    <Fargate className="cpu-1 mem-2gb port-8080 scale-3-10" />
 
-    {/* Serverless handler */}
-    <Lambda className="runtime-nodejs22" />
+    {/* Serverless event handler */}
+    <Lambda className="runtime-nodejs22 timeout-30 memory-512" />
 
   </VPC>
 </Infrastructure>
@@ -277,74 +265,86 @@ The CloudAST IDE will be available at **[http://localhost:5173](http://localhost
 
 ### Selecting a Compile Target
 
-Use the **Target** dropdown in the top-right of the Studio to switch between:
+Use the **Target** dropdown in the top-right of the Studio:
 
-- `Terraform (HCL)` — Bidirectional. Edits in either pane sync back.
-- `Pulumi (TypeScript)` — Read-only output.
-- `AWS CloudFormation` — Read-only output.
+- **Terraform (HCL)** — Bidirectional. Edits in either pane sync back.
+- **Pulumi (TypeScript)** — Read-only output.
+- **AWS CloudFormation** — Read-only output. Used for direct browser deploy.
 
 ### Deploying
 
-Click **Deploy** in the Studio toolbar. The browser sends the compiled output to the local deployment daemon, which runs `terraform apply` against your configured AWS credentials.
+**Direct from browser (CloudFormation):**
+1. Connect your AWS credentials in the Studio settings
+2. Design your topology and select CloudFormation as the target
+3. Click **Deploy** — review the changeset, then confirm
+4. Watch the stack build live. CloudAST rolls back automatically on failure.
 
-> **Note:** Pulumi and CloudFormation targets must be deployed through their respective CLI tools. The deployment bridge is Terraform-only.
+**Local via Terraform daemon:**
+
+Click **Deploy** with Terraform selected as the target. The browser sends the compiled output to the local daemon, which runs `terraform apply` against your configured AWS credentials.
 
 ---
 
-## Architecture Overview
+## Local Deployment Bridge
+
+The `deploy-server/` directory contains a companion Node.js/Express daemon that bridges browser-compiled Terraform output to your local machine.
+
+It receives the compiled `.tf` files via `POST` and executes `terraform apply` using your local AWS CLI credentials — no CI/CD pipeline required.
+
+```bash
+cd deploy-server && node server.js
+# Listens on http://localhost:3001
+```
+
+---
+
+## Project Structure
 
 ```
 cloudast/
-├── web-ui/                      # React frontend (Vite)
+├── web-ui/                         # React frontend (Vite)
 │   ├── src/
 │   │   ├── pages/
-│   │   │   ├── Landing.tsx          # Marketing page
-│   │   │   ├── Auth.tsx             # Login / register
-│   │   │   ├── Dashboard.tsx        # Project management
-│   │   │   └── Studio.tsx           # Main IDE
+│   │   │   ├── Landing.tsx         # Marketing page
+│   │   │   ├── Auth.tsx            # Login / register
+│   │   │   ├── Dashboard.tsx       # Project management
+│   │   │   └── Studio.tsx          # Main IDE
 │   │   ├── components/
-│   │   │   ├── canvas/              # React Flow nodes, edges, dock
-│   │   │   └── editor/              # Monaco wrapper, output pane
+│   │   │   ├── canvas/             # React Flow nodes, edges, dock
+│   │   │   └── editor/             # Monaco wrapper, output pane
 │   │   ├── compiler/
-│   │   │   ├── lexer.ts             # Babel-based JSX visitor
-│   │   │   ├── ast.ts               # InfrastructureState schema
-│   │   │   ├── validator.ts         # Edge & resource validation
+│   │   │   ├── lexer.ts            # Babel-based JSX visitor
+│   │   │   ├── ast.ts              # InfrastructureState schema
+│   │   │   ├── ast-types.ts        # Component type definitions
+│   │   │   ├── validator.ts        # Edge & resource validation
 │   │   │   └── generators/
 │   │   │       ├── terraform.ts
 │   │   │       ├── pulumi.ts
 │   │   │       └── cloudformation.ts
 │   │   ├── context/
-│   │   │   └── AuthContext.tsx      # Global session management
+│   │   │   └── AuthContext.tsx     # Global session management
 │   │   └── supabaseClient.ts
 │   └── .env.local
 │
-└── deploy-server/               # Node.js deployment bridge
-    └── server.js                # Express API → terraform apply
+└── deploy-server/                  # Local deployment bridge
+    └── server.js                   # Express API → terraform apply
 ```
 
 ---
 
 ## Contributing
 
-Contributions are welcome. If you find a bug or want to propose a feature:
+Contributions are welcome. To propose a change:
 
 1. Fork the repository
-2. Create a branch: `git checkout -b feat/your-feature-name`
-3. Commit with a clear message: `git commit -m 'feat: add your feature'`
+2. Create a branch: `git checkout -b feat/your-feature`
+3. Commit clearly: `git commit -m 'feat: describe what changed and why'`
 4. Push and open a Pull Request
 
-Please keep PRs focused. Include a clear description of what changed and why.
+Keep PRs focused. One feature or fix per PR makes reviews faster.
 
 ---
 
 ## License
 
-Released under the **MIT License**. See [`LICENSE`](./LICENSE) for details.
-
----
-
-<div align="center">
-
-Built with React · Compiled to infrastructure.
-
-</div>
+Released under the [MIT License](LICENSE).

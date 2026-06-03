@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Terminal, GitBranch, ArrowRight, Database, Network, Code2, Cpu, Zap, Box, HardDrive, Layers, FileCode2, Check } from 'lucide-react';
+import { Terminal, GitBranch, ArrowRight, Database, Network, Code2, Cpu, Zap, Box, HardDrive, Layers, FileCode2, Check, BarChart3, Search, CloudLightning } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const STYLE = `
@@ -83,7 +83,6 @@ const STYLE = `
   }
   .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,.18); }
 
-  /* ── FORCE SYMMETRICAL 2x2 GRID ── */
   .feat-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -176,10 +175,9 @@ const STYLE = `
     pointer-events: none;
   }
 
-  /* Code Window */
   .code-window {
     background: #0a0a0a; border: 1px solid var(--border); border-radius: 12px;
-    width: 100%; max-width: 800px; margin: 40px auto 0;
+    width: 100%; max-width: 850px; margin: 40px auto 0;
     box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 30px 80px rgba(0,0,0,0.8), 0 0 60px var(--dim);
     overflow: hidden; text-align: left;
   }
@@ -196,7 +194,6 @@ const STYLE = `
   .syn-val { color: #34D399; }
   .syn-text { color: #EFEFEF; }
 
-  /* Step Pipeline */
   .step-container { display: flex; justify-content: space-between; align-items: flex-start; position: relative; max-width: 900px; margin: 60px auto; }
   .step-line { position: absolute; top: 32px; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--orange), transparent); opacity: 0.5; z-index: 0; }
   .step-item { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 30%; text-align: center; }
@@ -207,7 +204,6 @@ const STYLE = `
   }
   .step-num { position: absolute; top: -5px; right: 25px; background: var(--orange); color: #000; font-family: var(--mono); font-size: 0.65rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
 
-  /* Resource Cards */
   .resource-card {
     background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
     padding: 24px; position: relative; transition: all 0.2s;
@@ -252,8 +248,8 @@ const useTypewriter = (text: string, speed = 60, delay = 0) => {
 
 const TICKS = [
   '<ReactFlowProvider />','Supabase_Auth.getSession()','buildAST(nodes, edges)',
-  'generator.toTerraform()','PostgreSQL_RLS_Policies','useNodesState()',
-  'monaco-editor/react','Vite_HMR_Enabled'
+  'generator.toTerraform()','PostgreSQL_RLS_Policies','GlueCrawlerEngine',
+  'aws_athena_workgroup','monaco-editor/react','Vite_HMR_Enabled'
 ];
 
 const FEATURES = [
@@ -261,41 +257,40 @@ const FEATURES = [
     icon: <Network size={20} />,
     tag: 'react-flow',
     title: 'Visual Node Canvas',
-    body: "Built on React Flow. Drag and drop AWS components (VPCs, EC2s, RDS) onto an infinite, pan-able canvas. Features custom nodes with auto-snapping and logical edge connection routing.",
+    body: "Built on React Flow. Drag and drop AWS components (VPCs, Subnets, Security Groups) onto an infinite canvas. Features custom nodes with auto-snapping and logical hierarchy nesting support.",
   },
   {
     icon: <Cpu size={20} />,
     tag: 'ast-compiler',
-    title: 'Live AST Translation',
-    body: "A custom-built Abstract Syntax Tree parser running in the browser. It traverses your visual graph and translates relationships into raw HashiCorp Configuration Language (HCL) in real-time.",
+    title: 'Modern Analytics Routing',
+    body: "Fully maps out Serverless Data Pipelines. Write simple structural JSX tags, and watch the compiler synthesize full metadata catalogs, crawl loops, and serverless querying workgroups natively.",
   },
   {
-    icon: <Database size={20} />,
-    tag: 'supabase-pg',
-    title: 'Cloud Persistence',
-    body: "Fully integrated with Supabase PostgreSQL and OAuth. Your infrastructure blueprints are saved as JSON state to your account, protected by Row Level Security (RLS) policies.",
+    icon: <CloudLightning size={20} />,
+    tag: 'aws-sdk',
+    title: 'Direct Account Ingestion',
+    body: "Zero manual friction. CloudAST interfaces directly with AWS infrastructure tokens right inside the dashboard workspace, deploying production-ready stacks into your real cloud stack with a single click.",
   },
   {
     icon: <Code2 size={20} />,
     tag: 'monaco-editor',
-    title: 'Bidirectional IDE',
-    body: "Embedded Monaco Editor (the engine behind VS Code) provides syntax-highlighted output. As you move nodes on the canvas, the code editor updates instantly without page refreshes.",
+    title: 'Bidirectional IDE Workspace',
+    body: "Embedded Monaco Editor provides state-highlighted output. Moving canvas blocks translates into raw Terraform blocks and polyglot infrastructure files synchronously.",
   },
 ];
 
 const SUPPORTED_RESOURCES = [
-  { name: 'VPC', icon: <Network size={24} color="#60A5FA" />, desc: 'Virtual Private Cloud with subnets, NAT, and routing.' },
-  { name: 'RDS', icon: <Database size={24} color="#34D399" />, desc: 'PostgreSQL, MySQL, MariaDB with Multi-AZ support.' },
-  { name: 'Fargate', icon: <Box size={24} color="#FBBF24" />, desc: 'Serverless containers with ECS orchestration.' },
-  { name: 'Lambda', icon: <Zap size={24} color="#A78BFA" />, desc: 'Serverless functions with multiple runtimes.' },
-  { name: 'S3', icon: <HardDrive size={24} color="#38BDF8" />, desc: 'Object storage with versioning and encryption.' },
-  { name: 'DynamoDB', icon: <Layers size={24} color="#818CF8" />, desc: 'NoSQL database with on-demand scaling.' }
+  { name: 'VPC & Subnets', icon: <Network size={24} color="#60A5FA" />, desc: 'Virtual networks complete with custom isolated Subnets and Security Group rule generation.' },
+  { name: 'S3 Storage Sinks', icon: <HardDrive size={24} color="#38BDF8" />, desc: 'Encrypted buckets locked down with strict public access blocks and automated access logs.' },
+  { name: 'Glue Catalog Database', icon: <Database size={24} color="#34D399" />, desc: 'Central metadata catalog database structures that store schemas discovered across raw target files.' },
+  { name: 'Glue Schema Crawlers', icon: <Layers size={24} color="#FBBF24" />, desc: 'Automated schedulers that wake up, scan raw S3 folders, and dynamically structure columns using IAM roles.' },
+  { name: 'Athena SQL Workspace', icon: <Search size={24} color="#A78BFA" />, desc: 'Serverless execution workgroups allowing standard relational SQL queries straight against unstructured data logs.' },
+  { name: 'Lambda Engine', icon: <Zap size={24} color="#818CF8" />, desc: 'Serverless compute triggers with dynamic timeout tracking and custom gateway configurations.' }
 ];
 
 export default function Landing() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  // Typewriters
   const typedHero = useTypewriter("BUILT LIKE COMPONENTS", 70, 500);
   const typedCmd = useTypewriter('CloudAST compile --target terraform', 40, 1500);
   const isCmdDone = typedCmd.length >= 'CloudAST compile --target terraform'.length;
@@ -327,7 +322,7 @@ export default function Landing() {
         </div>
 
         <div className="hide-sm" style={{ display:'flex', gap:32 }}>
-          {['Architecture','Supabase DB','React Flow Docs'].map(l => (
+          {['Architecture','Data Pipelines','React Flow Docs'].map(l => (
             <button key={l} className="nav-pill">{l}</button>
           ))}
         </div>
@@ -342,6 +337,7 @@ export default function Landing() {
         </div>
       </nav>
 
+      {/* ── HERO ── */}
       <section style={{
         position:'relative', minHeight:'100vh',
         display:'flex', flexDirection:'column',
@@ -353,16 +349,6 @@ export default function Landing() {
         <div className="grid-bg" />
         <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:1, height:150, background:'linear-gradient(to bottom, var(--orange), transparent)', opacity:0.4 }} />
         <div className="fade-up" style={{ animationDelay:'0ms', marginBottom:24, zIndex: 10 }}>
-          <span style={{
-            fontFamily:'var(--mono)', fontSize:'.7rem', letterSpacing:'.12em',
-            display:'inline-flex', alignItems:'center', gap:8,
-            padding:'6px 14px',
-            border:'1px solid rgba(232,80,10,.3)', borderRadius:3,
-            background:'rgba(232,80,10,.08)', color:'var(--orange2)',
-          }}>
-            <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--orange)', animation:'pulse 2s ease infinite' }} />
-            BETA BUILD 
-          </span>
         </div>
 
         <h1 className="fade-up" style={{
@@ -384,15 +370,15 @@ export default function Landing() {
           animationDelay:'200ms',
           fontFamily:'var(--sans)', fontWeight:400,
           fontSize:'1.2rem', lineHeight:1.7,
-          color:'var(--muted2)', maxWidth:550, marginBottom:48,
+          color:'var(--muted2)', maxWidth:600, marginBottom:48,
           position: 'relative', zIndex: 10
         }}>
-          Architect enterprise <span style={{ color: '#3ECF8E' }}>AWS</span> environments using familiar <span style={{ color: '#ffffff' }}>React (JSX)</span>. or a bidirectional visual canvas. Instantly compile your topologies into production-ready <span style={{ color: '#ffffff' }}>Terraform, Pulumi, or CloudFormation.</span>
+          Architect enterprise <span style={{ color: '#3ECF8E' }}>AWS</span> environments using familiar <span style={{ color: '#ffffff' }}>React (JSX)</span> or a bidirectional visual canvas. Instantly compile your topologies into production-ready <span style={{ color: '#ffffff' }}>Terraform and IAM policies.</span>
         </p>
 
         <div className="fade-up col-sm" style={{ animationDelay:'300ms', display:'flex', gap:16, flexWrap:'wrap', justifyContent:'center', marginBottom:60, zIndex: 10 }}>
           <button className="btn-fire" style={{ fontSize:'.95rem', padding:'14px 28px' }} onClick={() => navigate('/dashboard')}>
-            Launch App <ArrowRight size={16} />
+            Launch Studio <ArrowRight size={16} />
           </button>
           <button className="btn-ghost" style={{ fontSize:'.95rem', padding:'14px 24px' }} onClick={() => window.open('https://github.com/Kritagya123611/CloudAST', '_blank')}>
             <Terminal size={16} /> View GitHub Repo
@@ -405,7 +391,7 @@ export default function Landing() {
             <div className="term-dot" style={{ background:'#FEBC2E' }} />
             <div className="term-dot" style={{ background:'#27C840' }} />
             <span style={{ fontFamily:'var(--mono)', fontSize:'.7rem', color:'var(--muted)', marginLeft:12 }}>
-              src/compiler/ast.ts
+              src/compiler/ast-orchestrator.ts
             </span>
           </div>
           <div style={{ padding:'24px', fontFamily:'var(--mono)', fontSize:'.85rem', lineHeight:1.9, color:'#777' }}>
@@ -418,18 +404,18 @@ export default function Landing() {
             {isCmdDone && (
               <>
                 <div style={{ animation:'fadeIn .3s both', animationDelay:'.1s', color:'#3ECF8E', marginTop: 12 }}>
-                  [info] Supabase session verified
+                  [info] Production secure session established via Supabase
                 </div>
                 <div style={{ animation:'fadeIn .3s both', animationDelay:'.3s', color:'#4ADE80' }}>
-                  [success] React Flow graph parsed: 4 Nodes, 3 Edges
+                  [success] Abstract Syntax Tree parsed: Data Lake topology verified
                 </div>
                 <div style={{ animation:'fadeIn .3s both', animationDelay:'.6s' }}>
                   <span style={{ color:'var(--orange2)' }}>▸</span>
-                  {' '}Translating AST to HCL format...
+                  {' '}Synthesizing AWS Glue metadata catalogs and Athena structural blocks...
                 </div>
                 <div style={{ animation:'fadeIn .3s both', animationDelay:'.9s' }}>
                   <span style={{ color:'var(--orange2)' }}>▸</span>
-                  {' '}Updating Monaco Editor state...
+                  {' '}Generating IAM structural permissions & HCL outputs...
                 </div>
                 <div style={{ animation:'fadeIn .3s both', animationDelay:'1.2s', marginTop: 12 }}>
                   <span className="blink" style={{ display:'inline-block', width:8, height:16, background:'var(--orange)', verticalAlign:'middle' }} />
@@ -440,6 +426,7 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── TICKER ── */}
       <div className="ticker-wrap">
         <div className="ticker-track">
           {[...TICKS, ...TICKS].map((t, i) => (
@@ -450,14 +437,78 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* ── BOLD DIRECT-DEPLOY STATEMENT SECTION ── */}
+      <section style={{ padding: '100px 24px 90px', textAlign: 'center', background: 'linear-gradient(to bottom, #050505, #0a0a0a)' }}>
+        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+          <h2 className="section-title" style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 600, color: 'var(--text)', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
+  Design it. Compile it.<br />
+  Deploy it — <span style={{ color: 'var(--orange)' }}>without leaving the tab.</span>
+</h2>
+          <p className="section-desc" style={{ fontFamily: 'var(--sans)', color: 'var(--muted2)', fontSize: '1.15rem', lineHeight: 1.6, marginTop: 16, maxWidth: '650px', margin: '16px auto 0' }}>
+            CloudAST now connects directly to your AWS account.
+            No CLI installs, no copy-pasting configs. One click from canvas to live infrastructure.
+          </p>
+        </div>
+      </section>
 
-      <section style={{ padding:'100px 32px', maxWidth:1100, margin:'0 auto', position: 'relative' }}>
+      {/* ── THE SYNTAX DEEP-DIVE PREVIEW ── */}
+      <section style={{ padding: '0px 24px 100px', textAlign: 'center', position: 'relative' }}>
+        <div className="code-window">
+          <div className="code-header">
+            <div className="code-dots">
+              <div className="code-dot" style={{background: '#EF4444'}}/>
+              <div className="code-dot" style={{background: '#F59E0B'}}/>
+              <div className="code-dot" style={{background: '#10B981'}}/>
+            </div>
+            <div className="code-title"><FileCode2 size={14} color="#F59E0B" /> data-pipeline.jsx</div>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: '0.7rem', color: '#E8500A', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Zap size={12} /> Live Compilation Active
+            </div>
+          </div>
+          
+          <div style={{ padding: '32px', fontFamily: 'var(--mono)', fontSize: '0.9rem', lineHeight: 1.8, overflowX: 'auto' }}>
+            <div>
+              <span className="syn-text">1&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">Infrastructure</span><span className="syn-text">&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">2&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">S3</span> <span className="syn-attr">name</span><span className="syn-text">=</span><span className="syn-val">"rawLogsBucket"</span> <span className="syn-text">/&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">3&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">GlueCatalog</span> <span className="syn-attr">name</span><span className="syn-text">=</span><span className="syn-val">"logsCatalog"</span> <span className="syn-attr">databaseName</span><span className="syn-text">=</span><span className="syn-val">"prod_analytics"</span> <span className="syn-text">/&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">4&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">GlueCrawler</span> <span className="syn-attr">name</span><span className="syn-text">=</span><span className="syn-val">"s3Crawler"</span> <span className="syn-attr">targetBucket</span><span className="syn-text">=</span><span className="syn-val">"rawLogsBucket"</span> <span className="syn-attr">targetCatalogId</span><span className="syn-text">=</span><span className="syn-val">"logsCatalog"</span> <span className="syn-text">/&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">5&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;</span><span className="syn-tag">Athena</span> <span className="syn-attr">name</span><span className="syn-text">=</span><span className="syn-val">"queryEngine"</span> <span className="syn-attr">catalogDatabaseId</span><span className="syn-text">=</span><span className="syn-val">"logsCatalog"</span> <span className="syn-text">/&gt;</span>
+            </div>
+            <div>
+              <span className="syn-text">6&nbsp;&nbsp;</span>
+              <span className="syn-text">&lt;/</span><span className="syn-tag">Infrastructure</span><span className="syn-text">&gt;</span><span className="blink">_</span>
+            </div>
+          </div>
+
+          <div style={{ padding: '16px 24px', background: '#111', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '16px', fontFamily: 'var(--mono)', fontSize: '0.75rem', color: 'var(--muted)' }}>
+            <span style={{ color: 'var(--text)' }}>&gt;_ Compiled Outputs:</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', padding: '4px 10px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.2)' }}><Check size={12}/> main.tf</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '4px' }}>template.json (CloudFormation)</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CORE COMPILER FEATURES ── */}
+      <section style={{ padding:'60px 32px 100px', maxWidth:1100, margin:'0 auto', position: 'relative' }}>
         <div style={{ textAlign:'center', marginBottom: 60 }}>
           <h2 style={{ fontFamily:'var(--display)', fontSize:'clamp(2.5rem, 5vw, 4rem)', letterSpacing:'.06em', color:'var(--text)', lineHeight:.95 }}>
             THE ACTUAL <span style={{ color:'var(--orange)' }}>ARCHITECTURE.</span>
           </h2>
           <p style={{ fontFamily:'var(--sans)', color:'var(--muted2)', marginTop:16, maxWidth:500, margin:'16px auto 0' }}>
-            No generic marketing fluff. Here is exactly how the CloudAST engine works under the hood.
+            No generic marketing fluff. Here is exactly how the CloudAST structural engine routes configurations under the hood.
           </p>
         </div>
 
@@ -477,10 +528,11 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── STEPS PIPELINE ── */}
       <section style={{ padding: '80px 24px', background: 'var(--bg2)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>How It Works</h2>
-          <p style={{ color: 'var(--muted2)', fontSize: '1.1rem' }}>Three steps from JSX to deployed infrastructure</p>
+          <p style={{ color: 'var(--muted2)', fontSize: '1.1rem' }}>Three steps from abstract definitions to working analytics clusters</p>
         </div>
 
         <div className="step-container">
@@ -488,93 +540,35 @@ export default function Landing() {
           
           <div className="step-item">
             <div className="step-icon"><Code2 size={28} /> <div className="step-num">1</div></div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Write JSX</h3>
-            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>Define infrastructure using familiar React component syntax and nested hierarchies.</p>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Write JSX Blocks</h3>
+            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>Define infrastructure topologies using modular syntax trees and declarative parameters.</p>
           </div>
 
           <div className="step-item">
             <div className="step-icon"><Layers size={28} /> <div className="step-num">2</div></div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Configure</h3>
-            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>Set resource properties using our intuitive Tailwind-inspired prefix-value classes.</p>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Auto-Compile</h3>
+            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>The background state loop automatically synthesizes structural relationships and dependencies.</p>
           </div>
 
           <div className="step-item">
             <div className="step-icon"><Zap size={28} /> <div className="step-num">3</div></div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Generate</h3>
-            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>Get production-ready Terraform files with AWS best practices automatically baked in.</p>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px' }}>Direct Deployment</h3>
+            <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '240px' }}>Hit deploy to fire native API payloads that spin up live environments instantly.</p>
           </div>
         </div>
       </section>
 
-      <section style={{ padding: '100px 24px', textAlign: 'center', position: 'relative' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>Intuitive Syntax</h2>
-          <p style={{ color: 'var(--muted2)', fontSize: '1.1rem' }}>Configuration that feels natural to React developers</p>
-        </div>
-
-        <div className="code-window">
-          <div className="code-header">
-            <div className="code-dots">
-              <div className="code-dot" style={{background: '#EF4444'}}/>
-              <div className="code-dot" style={{background: '#F59E0B'}}/>
-              <div className="code-dot" style={{background: '#10B981'}}/>
-            </div>
-            <div className="code-title"><FileCode2 size={14} color="#F59E0B" /> infrastructure.jsx</div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '0.7rem', color: '#E8500A', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Zap size={12} /> Generating Terraform...
-            </div>
-          </div>
-          
-          <div style={{ padding: '32px', fontFamily: 'var(--mono)', fontSize: '0.9rem', lineHeight: 1.8, overflowX: 'auto' }}>
-            <div>
-              <span className="syn-text">1&nbsp;&nbsp;</span>
-              <span className="syn-text">&lt;</span><span className="syn-tag">Infrastructure</span><span className="syn-text">&gt;</span>
-            </div>
-            <div>
-              <span className="syn-text">2&nbsp;&nbsp;&nbsp;&nbsp;</span>
-              <span className="syn-text">&lt;</span><span className="syn-tag">VPC</span> <span className="syn-attr">className</span><span className="syn-text">=</span><span className="syn-val">"cidr-10.0.0.0/16 region-us-east-1"</span><span className="syn-text">&gt;</span>
-            </div>
-            <div>
-              <span className="syn-text">3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-              <span className="syn-text">&lt;</span><span className="syn-tag">RDS</span> <span className="syn-attr">className</span><span className="syn-text">=</span><span className="syn-val">"engine-postgres multi-az"</span> <span className="syn-text">/&gt;</span>
-            </div>
-            <div>
-              <span className="syn-text">4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-              <span className="syn-text">&lt;</span><span className="syn-tag">Fargate</span> <span className="syn-attr">className</span><span className="syn-text">=</span><span className="syn-val">"mem-2gb cpu-1 port-8080"</span> <span className="syn-text">/&gt;</span>
-            </div>
-            <div>
-              <span className="syn-text">5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-              <span className="syn-text">&lt;</span><span className="syn-tag">Lambda</span> <span className="syn-attr">className</span><span className="syn-text">=</span><span className="syn-val">"runtime-nodejs22"</span> <span className="syn-text">/&gt;</span>
-            </div>
-            <div>
-              <span className="syn-text">6&nbsp;&nbsp;&nbsp;&nbsp;</span>
-              <span className="syn-text">&lt;/</span><span className="syn-tag">VPC</span><span className="syn-text">&gt;</span>
-            </div>
-            <div>
-              <span className="syn-text">7&nbsp;&nbsp;</span>
-              <span className="syn-text">&lt;/</span><span className="syn-tag">Infrastructure</span><span className="syn-text">&gt;</span><span className="blink">_</span>
-            </div>
-          </div>
-
-          <div style={{ padding: '16px 24px', background: '#111', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '16px', fontFamily: 'var(--mono)', fontSize: '0.75rem', color: 'var(--muted)' }}>
-            <span style={{ color: 'var(--text)' }}>&gt;_ Output:</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', padding: '4px 10px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.2)' }}><Check size={12}/> main.tf</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '4px' }}>variables.tf</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '4px' }}>outputs.tf</span>
-          </div>
-        </div>
-      </section>
-
-      <section style={{ padding: '60px 24px 120px', maxWidth: '1100px', margin: '0 auto' }}>
+      {/* ── RESOURCE CARDS SHOWCASE ── */}
+      <section style={{ padding: '100px 24px 120px', maxWidth: '1100px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>Supported Resources</h2>
-          <p style={{ color: 'var(--muted2)', fontSize: '1.1rem' }}>All the building blocks for modern cloud architecture</p>
+          <h2 style={{ fontFamily: 'var(--sans)', fontSize: '2.5rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>Supported Cloud Resources</h2>
+          <p style={{ color: 'var(--muted2)', fontSize: '1.1rem' }}>Full analytical processing components backed by real compilers</p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
           {SUPPORTED_RESOURCES.map((res, i) => (
             <div key={i} className="resource-card">
-              <div className="aws-badge">AWS</div>
+              <div className="aws-badge">AWS SPEC</div>
               <div style={{ marginBottom: '20px' }}>{res.icon}</div>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '10px' }}>{res.name}</h3>
               <p style={{ color: 'var(--muted2)', fontSize: '0.9rem', lineHeight: 1.5 }}>{res.desc}</p>
@@ -583,15 +577,16 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── FOOTER ── */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#050505', flexWrap: 'wrap', gap: '20px' }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <div style={{ width:24, height:24, borderRadius:4, background:'var(--orange)', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <GitBranch size={12} color="#fff" strokeWidth={2.5} />
           </div>
-          <span style={{ fontFamily:'var(--display)', fontSize:'1.2rem', letterSpacing:'.08em', color:'var(--text)' }}>CloudAST</span>
+          <span style={{ fontFamily:'var(--display)', fontSize:'1.2rem', letterSpacing:'.08em', color:'var(--text)' }}>CloudAST Engine</span>
         </div>
         <div style={{ fontFamily: 'var(--mono)', fontSize: '0.75rem', color: 'var(--muted)' }}>
-          © 2026 CloudAST Engine. MIT License.
+          © 2026 CloudAST Studio. Open Source via MIT License.
         </div>
       </footer>
     </>

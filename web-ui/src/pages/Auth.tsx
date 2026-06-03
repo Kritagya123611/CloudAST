@@ -204,8 +204,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  //const navigate = useNavigate();
+  //const { user } = useAuth();
 
   useEffect(() => {
     const el = document.createElement('style');

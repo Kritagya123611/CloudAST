@@ -1,3 +1,4 @@
+// formatter.ts
 import { InfrastructureState, AWSResource } from '../../core/schema/ast-types';
 
 export function generateTerraform(state: InfrastructureState): string {
@@ -113,6 +114,85 @@ case 'Lambda':
         }
     }
     `;
+  case 'Subnet':
+    return `
+resource "aws_subnet" "${res.id}" {
+  vpc_id                  = ${res.parent ? `aws_vpc.${res.parent}.id` : 'var.vpc_id'}
+  cidr_block              = "${res.cidrBlock || '10.0.1.0/24'}"
+  availability_zone       = "${res.availabilityZone || 'us-east-1a'}"
+  map_public_ip_on_launch = ${res.mapPublicIpOnLaunch || false}
+  tags = {
+    Name = "${res.id}"
+  }
+}
+`;
+
+case 'SecurityGroup':
+    const ports = res.ingressPorts || [80, 443];
+    const ingressRules = ports.map(port => `
+  ingress {
+    from_port   = ${port}
+    to_port     = ${port}
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }`).join('');
+
+    return `
+resource "aws_security_group" "${res.id}" {
+  name        = "${res.id}"
+  description = "${res.description || 'Managed by CloudAST'}"
+  vpc_id      = ${res.parent ? `aws_vpc.${res.parent}.id` : 'var.vpc_id'}
+${ingressRules}
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+`;
+
+case 'DynamoDB':
+    return `
+resource "aws_dynamodb_table" "${res.id}" {
+  name           = "${res.id}"
+  billing_mode   = "${res.billingMode || 'PAY_PER_REQUEST'}"
+  hash_key       = "${res.hashKey || 'id'}"
+
+  attribute {
+    name = "${res.hashKey || 'id'}"
+    type = "S"
+  }
+  
+  tags = {
+    Environment = "Production"
+  }
+}
+`;
+
+case 'APIGateway':
+    return `
+resource "aws_apigatewayv2_api" "${res.id}" {
+  name          = "${res.id}-api"
+  protocol_type = "${res.protocolType || 'HTTP'}"
+}
+
+${res.targetLambda ? `
+resource "aws_apigatewayv2_integration" "${res.id}_integration" {
+  api_id           = aws_apigatewayv2_api.${res.id}.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.${res.targetLambda}.invoke_arn
+}
+
+resource "aws_lambda_permission" "${res.id}_api_gw" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.${res.targetLambda}.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "\${aws_apigatewayv2_api.${res.id}.execution_arn}/*/*"
+}
+` : ''}
+`;
     default:
       return `\n# Resource type ${(res as any).type} not yet implemented in generator\n`;
 }

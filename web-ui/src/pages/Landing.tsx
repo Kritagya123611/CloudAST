@@ -307,14 +307,14 @@ export default function Landing() {
       <div className="noise" aria-hidden />
 
       {/* ── NAV ── */}
-      <nav style={{
-        position:'fixed', top:0, left:0, right:0, zIndex:200,
-        display:'flex', alignItems:'center', justifyContent:'space-between',
-        padding:'0 40px', height:60,
-        background:'rgba(5,5,5,.8)',
-        backdropFilter:'blur(16px)',
-        borderBottom:'1px solid rgba(255,255,255,.05)',
-      }}>
+ <nav style={{
+  position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+  padding: '0 40px', height: 60,
+  background: 'rgba(5,5,5,.8)',
+  backdropFilter: 'blur(16px)',
+  borderBottom: '1px solid rgba(255,255,255,.05)',
+}}>
         <div onClick={() => navigate('/')} style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer' }}>
           <span style={{ fontFamily:'var(--display)', fontSize:'1.4rem', letterSpacing:'.08em', color:'var(--text)' }}>
               CloudAST

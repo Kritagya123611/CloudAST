@@ -123,6 +123,12 @@ export default function Studio() {
   const [saveName, setSaveName] = useState('Production Architecture');
   const [saveRegion, setSaveRegion] = useState('us-east-1');
   const [isSaving, setIsSaving] = useState(false);
+
+  // --- Deploy Modal State ---
+  const [showDeployModal, setShowDeployModal] = useState(false);
+  const [awsCreds, setAwsCreds] = useState({ accessKeyId: '', secretAccessKey: '' });
+  const [isDeploying, setIsDeploying] = useState(false);
+
   const executeSave = async () => {
     if (!user) {
       alert("Error: You must be logged in to save.");
@@ -147,6 +153,38 @@ export default function Studio() {
       alert("Failed to save. Check console for details.");
     } else {
       setShowSaveModal(false);
+    }
+  };
+
+  const executeDeploy = async () => {
+    if (!awsCreds.accessKeyId || !awsCreds.secretAccessKey) {
+      alert("Please enter both AWS Access Key and Secret Key.");
+      return;
+    }
+
+    setIsDeploying(true);
+
+    // 1. Instantly generate the CloudFormation JSON from the current visual/JSX state
+    const cfnTemplate = generateCloudFormation(currentBlueprint);
+
+    // 2. Send to AWS using the service we created
+    const result = await deployToAWS({
+      accessKeyId: awsCreds.accessKeyId,
+      secretAccessKey: awsCreds.secretAccessKey,
+      region: saveRegion, // Reusing your existing region state
+      templateBody: cfnTemplate,
+      stackName: `CloudAST-${Date.now()}`
+    });
+
+    setIsDeploying(false);
+
+    if (result.success) {
+      alert(`Deployment initiated successfully! Stack ID: \n${result.stackId}`);
+      setShowDeployModal(false);
+      // Wipe the credentials from volatile memory for security!
+      setAwsCreds({ accessKeyId: '', secretAccessKey: '' }); 
+    } else {
+      alert(`Deployment failed: \n${result.error}`);
     }
   };
 
@@ -232,7 +270,13 @@ export default function Studio() {
           <button className="btn-ide-primary" onClick={() => setShowSaveModal(true)}>
             <Save size={14} /> Save
           </button>
-          <button className="btn-ide-primary" style={{ background: 'var(--orange)', color: '#fff' }}><Play size={14} /> Deploy</button>
+          <button 
+            className="btn-ide-primary" 
+            style={{ background: 'var(--orange)', color: '#fff' }}
+            onClick={() => setShowDeployModal(true)}
+          >
+            <Play size={14} /> Deploy
+          </button>
         </div>
       </div>
 
@@ -344,6 +388,68 @@ export default function Studio() {
                 style={{ padding: '8px 16px', background: 'var(--orange)', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
               >
                 {isSaving ? 'Saving...' : 'Confirm Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DEPLOY MODAL */}
+      {showDeployModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
+          background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: 'var(--bg-panel)', border: '1px solid var(--border)',
+            borderRadius: '8px', padding: '24px', width: '400px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.8)'
+          }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: 500 }}>Deploy to AWS</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+              Keys are stored in volatile memory and never saved to a database.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px' }}>AWS Access Key ID</label>
+                <input 
+                  type="text" 
+                  value={awsCreds.accessKeyId} 
+                  onChange={(e) => setAwsCreds({...awsCreds, accessKeyId: e.target.value})}
+                  placeholder="AKIAIOSFODNN7EXAMPLE"
+                  style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-main)', borderRadius: '4px', outline: 'none', fontFamily: 'var(--mono)' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px' }}>AWS Secret Access Key</label>
+                <input 
+                  type="password" 
+                  value={awsCreds.secretAccessKey} 
+                  onChange={(e) => setAwsCreds({...awsCreds, secretAccessKey: e.target.value})}
+                  placeholder="••••••••••••••••••••••••••••••••"
+                  style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-main)', borderRadius: '4px', outline: 'none', fontFamily: 'var(--mono)' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button 
+                onClick={() => {
+                  setShowDeployModal(false);
+                  setAwsCreds({ accessKeyId: '', secretAccessKey: '' }); // Clear on cancel
+                }}
+                style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-main)', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={executeDeploy} 
+                disabled={isDeploying}
+                style={{ padding: '8px 16px', background: 'var(--orange)', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                {isDeploying ? 'Deploying to AWS...' : 'Execute Deployment'}
               </button>
             </div>
           </div>

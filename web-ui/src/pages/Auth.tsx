@@ -238,11 +238,14 @@ export default function Auth() {
     }
   };
 
-  const handleSocialLogin = async (provider: 'github' | 'google') => {
+const handleSocialLogin = async (provider: 'github' | 'google') => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/login` },
+        options: { 
+          // Dynamically routes to /dashboard or your workspace route upon a successful callback
+          redirectTo: `${window.location.origin}/dashboard` 
+        },
       });
       if (error) throw error;
     } catch (error: any) {

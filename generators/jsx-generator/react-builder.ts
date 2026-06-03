@@ -31,6 +31,11 @@ function renderComponent(res: AWSResource, allChildren: AWSResource[], indent: s
   if (res.type === 'DynamoDB' && (res as any).hashKey) className += `hk-${(res as any).hashKey} `;
   if (res.type === 'SecurityGroup' && (res as any).ingressPorts) className += `ports-[${(res as any).ingressPorts.join(',')}] `;
   if (res.type === 'APIGateway' && (res as any).protocolType) className += `protocol-${(res as any).protocolType.toLowerCase()} `;
+  // Add these inside your renderComponent function in react-builder.ts
+// Some resource types may not be present in the AWSResource.type union; use a safe any-cast for checks
+if ((res as any).type === 'GlueCatalog' && (res as any).databaseName) className += `db-${(res as any).databaseName} `;
+if ((res as any).type === 'GlueCrawler' && (res as any).scheduleCron) className += `cron-[${(res as any).scheduleCron.replace(/\s+/g, '_')}] `;
+if ((res as any).type === 'Athena') className += `serverless-sql `;
   
   className = className.trim();
   const classProp = className ? ` className="${className}"` : '';

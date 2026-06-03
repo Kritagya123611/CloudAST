@@ -215,10 +215,11 @@ export default function Auth() {
       document.head.removeChild(el);
     };
   }, []);
-
+/*
   useEffect(() => {
     if (user) navigate('/dashboard', { replace: true });
   }, [user, navigate]);
+*/
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,19 +240,24 @@ export default function Auth() {
   };
 
 const handleSocialLogin = async (provider: 'github' | 'google') => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { 
-          // Dynamically routes to /dashboard or your workspace route upon a successful callback
-          redirectTo: `${window.location.origin}/dashboard` 
-        },
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      setErrorMsg(error.message);
-    }
-  };
+  try {
+    // Detect if we are running locally or on production
+    const isLocal = window.location.hostname === 'localhost';
+    const redirectUrl = isLocal 
+      ? 'http://localhost:5173/dashboard' 
+      : 'https://cloud-ast-mwfi.vercel.app/dashboard';
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { 
+        redirectTo: redirectUrl 
+      },
+    });
+    if (error) throw error;
+  } catch (error: any) {
+    setErrorMsg(error.message);
+  }
+};
 
   return (
     <div style={{

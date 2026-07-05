@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Terminal, GitBranch, ArrowRight, Database, Network, Code2, Cpu, Zap, Box, HardDrive, Layers, FileCode2, Check, BarChart3, Search, CloudLightning } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -290,7 +289,6 @@ const SUPPORTED_RESOURCES = [
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const typedHero = useTypewriter("BUILT LIKE COMPONENTS", 70, 500);
   const typedCmd = useTypewriter('CloudAST compile --target terraform', 40, 1500);
   const isCmdDone = typedCmd.length >= 'CloudAST compile --target terraform'.length;
@@ -328,11 +326,8 @@ export default function Landing() {
         </div>
 
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          {!user && (
-            <button className="nav-pill hide-sm" onClick={() => navigate('/login')}>Sign in</button>
-          )}
-          <button className="btn-fire" onClick={() => navigate(user ? '/dashboard' : '/login')}>
-            {user ? 'Go to Dashboard' : 'Open Studio'} <ArrowRight size={14} />
+          <button className="btn-fire" onClick={() => navigate('/dashboard')}>
+            Go to Dashboard <ArrowRight size={14} />
           </button>
         </div>
       </nav>

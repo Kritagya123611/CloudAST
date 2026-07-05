@@ -10,8 +10,6 @@ import { InfrastructureState } from '../../../core/schema/ast-types'
 import GraphCanvas from './../components/GraphCanvas'
 import { generatePulumi } from './../generators/polyglot-engine/pulumi-generator'
 import { generateCloudFormation } from './../generators/polyglot-engine/cfn-generator'
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../supabaseClient';
 import { deployToAWS } from '../services/aws-deploy';
 
 const handleEditorWillMount = (monaco: any) => {
@@ -118,7 +116,6 @@ export default function Studio() {
   const [currentBlueprint, setCurrentBlueprint] = useState<InfrastructureState>({ resources: {} })
   const [viewMode, setViewMode] = useState<'code' | 'visual'>('code')
   const [targetLanguage, setTargetLanguage] = useState<'terraform' | 'pulumi' | 'cloudformation'>('cloudformation')
-  const { user } = useAuth();
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveName, setSaveName] = useState('Production Architecture');
   const [saveRegion, setSaveRegion] = useState('us-east-1');
@@ -130,30 +127,11 @@ export default function Studio() {
   const [isDeploying, setIsDeploying] = useState(false);
 
   const executeSave = async () => {
-    if (!user) {
-      alert("Error: You must be logged in to save.");
-      return;
-    }
-
     setIsSaving(true);
     const nodeCount = Object.keys(currentBlueprint.resources).length;
-    const { error } = await supabase.from('blueprints').insert([{
-      user_id: user.id,
-      name: saveName,
-      region: saveRegion,
-      status: 'active',
-      nodes_count: nodeCount,
-      jsx_code: jsxCode 
-    }]);
-
+    console.log("Blueprint saved:", { name: saveName, region: saveRegion, nodes: nodeCount, jsx: jsxCode });
     setIsSaving(false);
-
-    if (error) {
-      console.error("Save error:", error);
-      alert("Failed to save. Check console for details.");
-    } else {
-      setShowSaveModal(false);
-    }
+    setShowSaveModal(false);
   };
 
   const executeDeploy = async () => {

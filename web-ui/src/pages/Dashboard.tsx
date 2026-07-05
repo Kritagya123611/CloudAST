@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../supabaseClient';
-import { GitBranch, Plus, LogOut, LayoutGrid, Clock, Server, Activity } from 'lucide-react';
+import { GitBranch, Plus, LayoutGrid, Clock, Server, Activity } from 'lucide-react';
 
 const STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
@@ -74,41 +72,14 @@ function timeAgo(dateString: string) {
 
 export default function Dashboard() {
     const navigate = useNavigate();
-    const { user, logout } = useAuth();
     const [blueprints, setBlueprints] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [creating] = useState(false);
 
     useEffect(() => {
         const el = document.createElement('style'); el.textContent = STYLE; document.head.appendChild(el);
         return () => { document.head.removeChild(el); };
     }, []);
-    useEffect(() => {
-        if (!user) return;
-        
-        const fetchBlueprints = async () => {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from('blueprints')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('updated_at', { ascending: false });
-
-            if (error) {
-                console.error("Error fetching blueprints:", error);
-            } else {
-                setBlueprints(data || []);
-            }
-            setLoading(false);
-        };
-
-        fetchBlueprints();
-    }, [user]);
-
-    const handleSignOut = async () => {
-        await logout(); 
-        navigate('/'); 
-    };
 const handleCreateNew = () => {
         navigate('/studio');
     };
@@ -133,12 +104,11 @@ const handleCreateNew = () => {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: '0.75rem', color: 'var(--muted)', paddingRight: '12px', borderRight: '1px solid var(--border)' }}>
-                        {user?.email || 'sysadmin@local'}
-                    </span>
-                    <button className="btn-ghost" onClick={handleSignOut} title="Sign Out">
-                        <LogOut size={16} /> <span className="hide-sm">Sign Out</span>
-                    </button>
+                    <Link to="/" style={{ textDecoration: 'none' }}>
+                        <button className="btn-ghost">
+                            Home
+                        </button>
+                    </Link>
                 </div>
             </nav>
 

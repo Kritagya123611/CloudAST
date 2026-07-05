@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import {  Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
+import { useAuth } from '../context/AuthContext'
 import { GitBranch, ArrowRight } from 'lucide-react'
 
 const STYLE = `
@@ -203,8 +204,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  //const navigate = useNavigate();
-  //const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const el = document.createElement('style');
@@ -214,11 +215,9 @@ export default function Auth() {
       document.head.removeChild(el);
     };
   }, []);
-/*
   useEffect(() => {
     if (user) navigate('/dashboard', { replace: true });
   }, [user, navigate]);
-*/
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,8 +242,8 @@ const handleSocialLogin = async (provider: 'github' | 'google') => {
     // Detect if we are running locally or on production
     const isLocal = window.location.hostname === 'localhost';
     const redirectUrl = isLocal 
-      ? 'http://localhost:5173/dashboard' 
-      : 'https://cloud-ast-mwfi.vercel.app/dashboard';
+      ? 'http://localhost:5173/login' 
+      : 'https://cloud-ast-mwfi.vercel.app/login';
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
